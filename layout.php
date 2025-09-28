@@ -22,7 +22,7 @@ session_start();
 
     }
     .header-top {
-      background: #b84d52; /* Top bar background */
+      background: #198754; /* Top bar background */
       color: #fff;
       padding: 6px 20px;
       font-size: 14px;
