@@ -9,38 +9,32 @@ if (isset($_POST['regbtn'])) {
     $address = $_POST['address'];
     $profile_photo = uniqid() . $_FILES['profile_photo']['name'];
     $profile_photo_tmp = $_FILES['profile_photo']['tmp_name'];
-    // $token = bin2hex(random_bytes(50));
 
-    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile`, `gender`, `profile_picture`, `address`) VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address')";
+    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile`, `gender`, `profile_picture`, `address`) 
+          VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address')";
 
     if (mysqli_query($con, $q)) {
         if (!is_dir("images/profile_pictures")) {
             mkdir("images/profile_pictures");
-            move_uploaded_file($profile_photo_tmp, "d:\laragon\www\projectes\Kids-Korner\images\profile_pictures" . $profile_photo);
         }
-    } else {
         move_uploaded_file($profile_photo_tmp, "images/profile_pictures/" . $profile_photo);
     }
 
-?>
-    <script>
-        window.location.href = "register.php";
-    </script>
-<?php
+    echo "<script>window.location.href='register.php';</script>";
 }
 ob_start();
 ?>
 
 <style>
     body {
-        background: #f3f4f6;
+        background: #7da6a1; /* soft muted teal */
         font-family: 'Poppins', sans-serif;
     }
 
     .register-wrapper {
         max-width: 1100px;
         margin: auto;
-        min-height: 90vh;
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -49,82 +43,106 @@ ob_start();
     .register-card {
         display: flex;
         width: 100%;
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        background: #fff;
+        background: #fffdf9;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
+    /* Left Side - Banner with background image */
     .register-left {
         flex: 1;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        background: url("designing_pages_images/baby-image.png") center/cover no-repeat;
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
-        padding: 30px;
         text-align: center;
+        padding: 30px;
+    }
+
+    .register-left .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.35); /* dark overlay for readability */
     }
 
     .register-left h1 {
-        font-size: 2rem;
+        position: relative;
+        color: #fff;
+        font-size: 1.8rem;
         font-weight: 700;
+        padding: 12px 20px;
+        border-radius: 10px;
+        z-index: 1;
     }
 
+    /* Right Side - Form */
     .register-right {
-        flex: 2;
+        flex: 1.3;
         padding: 40px;
     }
 
     .register-right h2 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: 700;
         margin-bottom: 10px;
-        color: #111827;
+        text-align: center;
+        color: #222;
+    }
+
+    .register-right p {
+        text-align: center;
+        color: #666;
+        margin-bottom: 25px;
     }
 
     .form-control,
     .form-select,
     textarea {
-        border: none;
-        border-bottom: 2px solid #e5e7eb;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px 14px;
         font-size: 0.95rem;
+        margin-bottom: 18px;
+        transition: all 0.3s ease;
     }
 
     .form-control:focus,
     .form-select:focus,
     textarea:focus {
-        border-color: #8b5cf6;
+        border-color: #b8735c; /* KidsKorner theme */
         outline: none;
-        box-shadow: none;
     }
 
-    .btn-kapadabazar {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    .btn-kidskorner {
+        background: #b8735c;
         color: #fff;
         border: none;
         padding: 12px;
+        width: 100%;
+        border-radius: 10px;
         font-weight: 600;
-        border-radius: 25px;
-        transition: all 0.3s ease;
+        font-size: 1rem;
+        transition: background 0.3s ease;
     }
 
-    .btn-kapadabazar:hover {
-        background: linear-gradient(135deg, #6366f1, #4338ca);
+    .btn-kidskorner:hover {
+        background: #9a5b45;
     }
 
     .register-footer {
-        margin-top: 20px;
-        font-size: 0.9rem;
-        color: #6b7280;
+        margin-top: 15px;
         text-align: center;
+        font-size: 0.9rem;
+        color: #555;
     }
 
     .register-footer a {
-        color: #6366f1;
+        color: #b8735c;
         font-weight: 500;
         text-decoration: none;
     }
@@ -137,90 +155,51 @@ ob_start();
         .register-card {
             flex-direction: column;
         }
-
         .register-left {
-            padding: 20px;
+            height: 200px;
         }
     }
 </style>
 
 <div class="register-wrapper">
     <div class="register-card">
-        <!-- Left Panel -->
+        <!-- Left Panel with background image -->
         <div class="register-left">
-            <h1><i class="fa-solid fa-user-plus me-2"></i> Welcome To Kids Korner</h1>
+            <div class="overlay"></div>
+            <h1>Welcome to KidsKorner</h1>
         </div>
 
-        <!-- Right Panel -->
+        <!-- Right Panel with form -->
         <div class="register-right">
-            <h2>Create your account</h2>
-            <p class="text-muted">Fill in the details to start shopping with us.</p>
+            <h2>Join the KidsKorner Family!</h2>
+            <p>Create your account and start shopping with us</p>
 
-            <form method="post" action="register.php" enctype="multipart/form-data" id="registerForm">
+            <form method="post" enctype="multipart/form-data">
                 <div class="row g-4">
-                    <!-- Left Column -->
                     <div class="col-lg-6">
-                        <div class="mb-3">
-                            <input type="text" class="form-control" name="fullname" placeholder="Full Name"
-                                data-validation="required alpha">
-                            <span class="error text-danger" id="fullnameError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <input type="email" class="form-control" name="email" placeholder="Email Address"
-                                data-validation="required email">
-                            <span class="error text-danger" id="emailError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <input type="password" class="form-control" name="password" id="password"
-                                placeholder="Password" data-validation="required strongPassword min max"
-                                data-min="8" data-max="25">
-                            <span class="error text-danger" id="passwordError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <input type="password" class="form-control" name="confirm_password"
-                                placeholder="Confirm Password" data-validation="required confirmPassword"
-                                data-password-id="password">
-                            <span class="error text-danger" id="confirm_passwordError"></span>
-                        </div>
+                        <input type="text" class="form-control" name="fullname" placeholder="Full Name" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email Address" required>
+                        <input type="password" class="form-control" name="password" placeholder="Password" required>
+                        <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
                     </div>
-
-                    <!-- Right Column -->
                     <div class="col-lg-6">
-                        <div class="mb-3">
-                            <select class="form-select" name="gender" data-validation="required">
-                                <option value="" selected>Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span class="error text-danger" id="genderError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <input type="text" class="form-control" name="mobile" placeholder="Mobile Number"
-                                data-validation="required numeric min max" data-min="10" data-max="10">
-                            <span class="error text-danger" id="mobileError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <input type="file" class="form-control" name="profile_photo"
-                                data-validation="required file filesize" data-filesize="200">
-                            <span class="error text-danger" id="profile_photoError"></span>
-                        </div>
-                        <div class="mb-3">
-                            <textarea class="form-control" name="address" rows="3" placeholder="Address"
-                                data-validation="required"></textarea>
-                            <span class="error text-danger" id="addressError"></span>
-                        </div>
-                    </div>
-
-                    <!-- Submit -->
-                    <div class="col-12">
-                        <button type="submit" class="btn w-100 btn-kapadabazar" name="regbtn">Register</button>
-                        <div class="register-footer">
-                            <p class="mb-0 mt-3">Already have an account ? <a href="login.php">Login Now</a></p>
-                        </div>
+                        <select class="form-select" name="gender" required>
+                            <option value="" selected>Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" class="form-control" name="mobile" placeholder="Mobile Number" required>
+                        <input type="file" class="form-control" name="profile_photo" required>
+                        <textarea class="form-control" name="address" rows="3" placeholder="Address" required></textarea>
                     </div>
                 </div>
+                <button type="submit" class="btn-kidskorner" name="regbtn">Create Account</button>
             </form>
+
+            <div class="register-footer">
+                <p>Already have an account? <a href="login.php">Log In</a></p>
+            </div>
         </div>
     </div>
 </div>
