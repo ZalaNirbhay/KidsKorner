@@ -11,7 +11,7 @@ if (isset($_POST['regbtn'])) {
     $profile_photo_tmp = $_FILES['profile_photo']['tmp_name'];
     // $token = bin2hex(random_bytes(50));
 
-    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile_number`, `gender`, `profile_picture`, `address`) VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address')";
+    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile`, `gender`, `profile_picture`, `address`) VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address')";
 
     if (mysqli_query($con, $q)) {
         if (!is_dir("images/profile_pictures")) {

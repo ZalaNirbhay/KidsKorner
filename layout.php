@@ -37,6 +37,7 @@ session_start();
           <li><a class="hover:text-gray-600" href="">Women</a></li>
           <li><a class="hover:text-gray-600" href="">Sale</a></li>
           <li><a class="hover:text-gray-600" href="register.php">Register</a></li>
+          <li><a class="hover:text-gray-600" href="login.php">Login</a></li>
         </ul>
       </div>
 

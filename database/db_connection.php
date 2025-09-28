@@ -1,9 +1,11 @@
 <?php
 
-$con = mysqli_connect("localhost", "root", "",);
+$con = mysqli_connect("localhost", "root", "root",);
 
 try {
-    mysqli_select_db($con, "Kids_Korner");
+    mysqli_select_db($con,"Kids_Korner");
 } catch (Exception $e) {
     echo "Error in selecting database";
+    // echo "$e";
 }
+
