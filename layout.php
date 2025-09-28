@@ -5,59 +5,98 @@ session_start();
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KidsKorner</title>
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <script src="js/bootstrap.bundle.min.js"></script>
-  <script src="js/jquery-3.7.1.min.js"></script>
-  <script src="js/jquery.validate.js"></script>
-  <script src="js/additional-methods.js"> </script>
-  <script src="js/validate.js"> </script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <link
-    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
-    rel="stylesheet" />
+  <!-- Bootstrap + Tailwind + Remix Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <title>Hello, world!</title>
+
+  <style>
+    body{
+            background-color: #4a6a6e; /* teal background */
+
+    }
+    .header-top {
+      background: #b84d52; /* Top bar background */
+      color: #fff;
+      padding: 6px 20px;
+      font-size: 14px;
+    }
+
+    .search-bar input {
+      border: 1px solid #ccc;
+    }
+
+    .nav-links a {
+      padding: 8px 14px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      color: #b84d52;
+    }
+  </style>
 </head>
 
-<body>
+<body style="background-color: #4a6a6e;">
 
-  <div class="navbar p-4 border-b">
-    <nav class="flex justify-between items-center w-full">
-      <!-- Left side -->
-      <div class="flex items-center gap-10">
-        <h4 class="text-lg font-bold">Kids-Korner</h4>
-        <ul class="flex gap-5">
-          <li><a class="hover:text-gray-600" href="index.php">Home</a></li>
-          <li><a class="hover:text-gray-600" href="">Men</a></li>
-          <li><a class="hover:text-gray-600" href="">Women</a></li>
-          <li><a class="hover:text-gray-600" href="">Sale</a></li>
-          <li><a class="hover:text-gray-600" href="register.php">Register</a></li>
-          <li><a class="hover:text-gray-600" href="login.php">Login</a></li>
-        </ul>
+  <!-- HEADER -->
+  <header>
+    <!-- Top Bar -->
+    <div class="header-top flex justify-between items-center">
+      <div class="font-bold">KidsKorner</div>
+      <div><a href="login.php" class="hover:underline">My Account / Login</a></div>
+    </div>
+
+    <!-- Main Header -->
+    <div class="flex justify-between items-center py-4 px-6 bg-white border-b">
+      <!-- Logo -->
+      <div class="text-xl font-bold text-red-600">KidsKorner</div>
+
+      <!-- Search Bar -->
+      <div class="flex items-center w-1/2 search-bar">
+        <input type="text" placeholder="Search for onesies, toys, strollers..."
+          class="rounded-l-md px-3 py-2 w-full focus:outline-none text-sm">
+        <button class="bg-red-600 text-white px-4 rounded-r-md"><i class="ri-search-line"></i></button>
       </div>
 
-      <!-- Right side -->
-      <div class="flex items-center gap-4">
-        <i class="ri-search-line cursor-pointer text-lg"></i>
-        <i class="ri-shopping-cart-2-fill cursor-pointer text-lg"></i>
+      <!-- Icons -->
+      <div class="flex items-center gap-5 text-xl">
+        <a href="cart.php" class="hover:text-red-600"><i class="ri-shopping-cart-line"></i></a>
+        <a href="login.php" class="hover:text-red-600"><i class="ri-user-line"></i></a>
       </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+      <ul class="flex justify-center nav-links py-2">
+        <li><a href="#">Newborns</a></li>
+        <li><a href="#">Infants</a></li>
+        <li><a href="#">Toddlers</a></li>
+        <li><a href="#">Preschool</a></li>
+        <li><a href="#">Sale</a></li>
+      </ul>
     </nav>
-  </div>
+  </header>
+
 
   <?php
   if (isset($content)) {
     echo $content;
   }
-
   ?>
 
+  <!-- FOOTER stays same -->
   <footer class="bg-gray-100 text-gray-700 mt-10 bottom-0">
-    <div class="max-w-7xl  mx-auto px-6  grid grid-cols-1 md:grid-cols-4 gap-8">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
 
       <!-- Logo & About -->
       <div>
@@ -114,9 +153,8 @@ session_start();
     </div>
   </footer>
 
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
 
 </body>
 
