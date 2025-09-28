@@ -81,7 +81,7 @@ ob_start();
 
   <!-- Card 2 -->
   <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-    <img src="asetes/images/sitting-baby.png" alt="Infants" class="w-full h-48 object-cover">
+    <img src="asetes/images/baby-2.png" alt="Infants" class="w-full h-48 object-cover">
     <div class="p-4 text-center">
       <h3 class="text-lg font-medium text-gray-800">Infants</h3>
     </div>
@@ -89,7 +89,7 @@ ob_start();
 
   <!-- Card 3 -->
   <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-    <img src="asetes/images/sitting-baby.png" alt="Toddlers" class="w-full h-48 object-cover">
+    <img src="asetes/images/baby-3.png" alt="Toddlers" class="w-full h-48 object-cover">
     <div class="p-4 text-center">
       <h3 class="text-lg font-medium text-gray-800">Toddlers</h3>
     </div>

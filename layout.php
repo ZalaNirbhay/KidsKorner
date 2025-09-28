@@ -78,11 +78,14 @@ session_start();
     <!-- Navigation -->
     <nav class="bg-white shadow-sm">
       <ul class="flex justify-center nav-links py-2">
+        <li><a href="index.php">home</a></li>
         <li><a href="#">Newborns</a></li>
         <li><a href="#">Infants</a></li>
         <li><a href="#">Toddlers</a></li>
         <li><a href="#">Preschool</a></li>
         <li><a href="#">Sale</a></li>
+        <li><a href="login.php">login</a></li>
+        <li><a href="register.php">register</a></li>
       </ul>
     </nav>
   </header>
