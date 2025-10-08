@@ -1,26 +1,129 @@
 <?php
 include_once('database/db_connection.php');
+include_once('mailer.php');
+
 if (isset($_POST['regbtn'])) {
     $fullname = $_POST['fullname'];
     $email = $_POST['email'];
     $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
     $gender = $_POST['gender'];
     $mobile = $_POST['mobile'];
     $address = $_POST['address'];
-    $profile_photo = uniqid() . $_FILES['profile_photo']['name'];
-    $profile_photo_tmp = $_FILES['profile_photo']['tmp_name'];
-
-    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile`, `gender`, `profile_picture`, `address`) 
-          VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address')";
-
-    if (mysqli_query($con, $q)) {
-        if (!is_dir("images/profile_pictures")) {
-            mkdir("images/profile_pictures");
+    // Handle profile picture upload
+    $profile_photo = '';
+    $profile_photo_tmp = '';
+    
+    if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] == 0) {
+        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        $file_type = $_FILES['profile_photo']['type'];
+        $file_size = $_FILES['profile_photo']['size'];
+        
+        // Validate file type
+        if (in_array($file_type, $allowed_types)) {
+            // Validate file size (max 5MB)
+            if ($file_size <= 5 * 1024 * 1024) {
+                $file_extension = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+                $profile_photo = uniqid() . '_' . time() . '.' . $file_extension;
+                $profile_photo_tmp = $_FILES['profile_photo']['tmp_name'];
+            } else {
+                echo "<script>alert('Profile picture size should be less than 5MB!'); window.location.href='register.php';</script>";
+                exit;
+            }
+        } else {
+            echo "<script>alert('Please upload a valid image file (JPG, PNG, GIF)!'); window.location.href='register.php';</script>";
+            exit;
         }
-        move_uploaded_file($profile_photo_tmp, "images/profile_pictures/" . $profile_photo);
+    } else {
+        echo "<script>alert('Please select a profile picture!'); window.location.href='register.php';</script>";
+        exit;
     }
 
-    echo "<script>window.location.href='register.php';</script>";
+    // Validate password confirmation
+    if ($password !== $confirm_password) {
+        echo "<script>alert('Passwords do not match!'); window.location.href='register.php';</script>";
+        exit;
+    }
+
+    // Check if email already exists
+    $check_email = "SELECT * FROM registration WHERE email = '$email'";
+    $email_result = mysqli_query($con, $check_email);
+    
+    if (mysqli_num_rows($email_result) > 0) {
+        echo "<script>alert('Email already exists! Please use a different email.'); window.location.href='register.php';</script>";
+        exit;
+    }
+
+    // Generate verification token
+    $verification_token = bin2hex(random_bytes(32));
+    $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+    // Generate a separate token for the token field (can be used for other purposes)
+    $user_token = bin2hex(random_bytes(16));
+    
+    $q = "INSERT INTO `registration`(`fullname`, `email`, `password`, `mobile`, `gender`, `profile_picture`, `address`, `status`, `role`, `token`, `is_verified`, `verification_token`, `verification_expires`) 
+          VALUES ('$fullname','$email','$password',$mobile,'$gender','$profile_photo','$address','Inactive','User','$user_token','inactive','$verification_token','$expires')";
+
+    if (mysqli_query($con, $q)) {
+        // Create directory if it doesn't exist
+        if (!is_dir("images/profile_pictures")) {
+            mkdir("images/profile_pictures", 0777, true);
+        }
+        
+        // Move uploaded file to the directory
+        $upload_path = "images/profile_pictures/" . $profile_photo;
+        if (move_uploaded_file($profile_photo_tmp, $upload_path)) {
+            // File uploaded successfully
+            // Set proper permissions
+            chmod($upload_path, 0644);
+        } else {
+            echo "<script>alert('Error uploading profile picture! Please try again.'); window.location.href='register.php';</script>";
+            exit;
+        }
+        
+        // Send verification email
+        $verification_link = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/verify_email.php?token=" . $verification_token;
+        
+        $email_subject = "Verify Your Kids-Korner Account";
+        $email_body = "
+            <html>
+            <head>
+                <title>Email Verification</title>
+            </head>
+            <body>
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #b8735c;'>Welcome to Kids-Korner!</h2>
+                    <p>Hello " . htmlspecialchars($fullname) . ",</p>
+                    <p>Thank you for registering with Kids-Korner. To complete your registration and access your account, please verify your email address by clicking the button below:</p>
+                    
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='$verification_link' style='background-color: #b8735c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>Verify Email Address</a>
+                    </div>
+                    
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style='word-break: break-all; color: #666;'>$verification_link</p>
+                    
+                    <p><strong>Note:</strong> This verification link will expire in 24 hours.</p>
+                    
+                    <p>If you didn't create an account with Kids-Korner, please ignore this email.</p>
+                    
+                    <hr style='margin: 30px 0; border: none; border-top: 1px solid #eee;'>
+                    <p style='color: #666; font-size: 12px;'>This email was sent from Kids-Korner. Please do not reply to this email.</p>
+                </div>
+            </body>
+            </html>
+        ";
+        
+        $email_sent = sendEmail($email, $email_subject, $email_body);
+        
+        if ($email_sent === true) {
+            echo "<script>alert('Registration successful! Please check your email and click the verification link to activate your account.'); window.location.href='login.php';</script>";
+        } else {
+            echo "<script>alert('Registration successful, but there was an error sending the verification email. Please contact support.'); window.location.href='login.php';</script>";
+        }
+    } else {
+        echo "<script>alert('Registration failed! Please try again.'); window.location.href='register.php';</script>";
+    }
 }
 ob_start();
 ?>
