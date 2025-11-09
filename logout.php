@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Check if admin or user
+$is_admin = isset($_SESSION['admin_role']) && $_SESSION['admin_role'] == 'admin';
+
 // Destroy all session data
 session_destroy();
 
@@ -13,7 +16,11 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Redirect to login page
-header("Location: login.php");
+// Redirect based on user type
+if ($is_admin) {
+    header("Location: admin_login.php");
+} else {
+    header("Location: login.php");
+}
 exit();
 ?>

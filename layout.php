@@ -17,78 +17,199 @@ session_start();
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
   <style>
-    body{
-            background-color: #4a6a6e; /* teal background */
-
-    }
-    .header-top {
-      background: #198754; /* Top bar background */
-      color: #fff;
-      padding: 6px 20px;
-      font-size: 14px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .search-bar input {
-      border: 1px solid #ccc;
-    }
-
-    .nav-links a {
-      padding: 8px 14px;
-      font-size: 15px;
-      font-weight: 500;
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
       color: #333;
+    }
+
+    /* Header Styles */
+    .main-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1rem 0;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
       text-decoration: none;
     }
 
-    .nav-links a:hover {
-      color: #b84d52;
+    .logo-star {
+      color: #dc2626;
+      font-size: 1.2rem;
+    }
+
+    .search-section {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 3rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .search-input:focus {
+      border-color: #b8735c;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+    }
+
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .header-icon {
+      color: #374151;
+      font-size: 1.3rem;
+      text-decoration: none;
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .header-icon:hover {
+      color: #b8735c;
+    }
+
+    .account-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+
+    .account-link:hover {
+      color: #b8735c;
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.75rem 0;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.5rem 0;
+      transition: color 0.3s;
+      text-transform: capitalize;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #b8735c;
     }
   </style>
 </head>
 
-<body style="background-color: #4a6a6e;">
+<body>
 
   <!-- HEADER -->
-  <header>
-    <!-- Top Bar -->
-    <div class="header-top flex justify-between items-center">
-      <div class="font-bold">KidsKorner</div>
-      <div><a href="login.php" class="hover:underline">My Account / Login</a></div>
-    </div>
+  <header class="main-header">
+    <div class="header-container">
+      <a href="index.php" class="logo-section">
+        <span>KidsKorner</span>
+        <span class="logo-star">*</span>
+      </a>
 
-    <!-- Main Header -->
-    <div class="flex justify-between items-center py-4 px-6 bg-white border-b">
-      <!-- Logo -->
-      <div class="text-xl font-bold text-red-600">KidsKorner</div>
-
-      <!-- Search Bar -->
-      <div class="flex items-center w-1/2 search-bar">
-        <input type="text" placeholder="Search for onesies, toys, strollers..."
-          class="rounded-l-md px-3 py-2 w-full focus:outline-none text-sm">
-        <button class="bg-red-600 text-white px-4 rounded-r-md"><i class="ri-search-line"></i></button>
+      <div class="search-section">
+        <i class="ri-search-line search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search for onesies...">
       </div>
 
-      <!-- Icons -->
-      <div class="flex items-center gap-5 text-xl">
-        <a href="cart.php" class="hover:text-red-600"><i class="ri-shopping-cart-line"></i></a>
-        <a href="login.php" class="hover:text-red-600"><i class="ri-user-line"></i></a>
+      <div class="header-icons">
+        <a href="cart.php" class="header-icon" title="Shopping Cart">
+          <i class="ri-shopping-cart-line"></i>
+        </a>
+        <a href="wishlist.php" class="header-icon" title="Wishlist">
+          <i class="ri-heart-line"></i>
+        </a>
+        <a href="<?php echo isset($_SESSION['user_email']) ? 'user_dashbord.php' : 'login.php'; ?>" class="account-link" title="<?php echo isset($_SESSION['user_email']) ? 'My Account' : 'Login'; ?>">
+          <i class="ri-user-line"></i>
+          <span><?php echo isset($_SESSION['user_email']) ? 'My Account' : 'Login'; ?></span>
+        </a>
       </div>
     </div>
+  </header>
 
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
-      <ul class="flex justify-center nav-links py-2">
-        <li><a href="index.php">home</a></li>
-        <li><a href="#">Newborns</a></li>
+  <!-- Navigation Bar -->
+  <nav class="nav-bar">
+    <div class="nav-container">
+      <ul class="nav-links">
+        <li><a href="index.php">Newborns</a></li>
         <li><a href="#">Infants</a></li>
-        <li><a href="#">Toddlers</a></li>
+        <li><a href="#" class="active">Toddlers</a></li>
         <li><a href="#">Preschool</a></li>
         <li><a href="#">Sale</a></li>
-        <li><a href="login.php">login</a></li>
-        <li><a href="register.php">register</a></li>
+        <?php if (!isset($_SESSION['user_email'])): ?>
+        <li><a href="login.php" style="color: #b8735c; font-weight: 600;">Login</a></li>
+        <li><a href="register.php" style="color: #b8735c; font-weight: 600;">Register</a></li>
+        <?php else: ?>
+        <li><a href="user_dashbord.php" style="color: #b8735c; font-weight: 600;">Dashboard</a></li>
+        <li><a href="logout.php" style="color: #dc2626; font-weight: 600;">Logout</a></li>
+        <?php endif; ?>
+        <?php if (!isset($_SESSION['admin_id'])): ?>
+        <li><a href="admin_login.php" style="color: #667eea; font-weight: 600;"><i class="ri-shield-user-line"></i> Admin</a></li>
+        <?php endif; ?>
       </ul>
-    </nav>
-  </header>
+    </div>
+  </nav>
 
 
   <?php
@@ -97,61 +218,39 @@ session_start();
   }
   ?>
 
-  <!-- FOOTER stays same -->
-  <footer class="bg-gray-100 text-gray-700 mt-10 bottom-0">
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
-
-      <!-- Logo & About -->
-      <div>
-        <h2 class="text-xl font-bold mb-3">KidsKorner</h2>
-        <p class="text-sm leading-6">
-          Your one-stop shop for trendy kids' fashion, toys, and accessories.
-          Bringing joy and comfort to every child.
-        </p>
-      </div>
-
-      <!-- Shop Links -->
-      <div>
-        <h3 class="text-lg font-semibold mb-3">Shop</h3>
-        <ul class="space-y-2 text-sm">
-          <li><a href="#" class="hover:text-black">Boys</a></li>
-          <li><a href="#" class="hover:text-black">Girls</a></li>
-          <li><a href="#" class="hover:text-black">New Arrivals</a></li>
-          <li><a href="#" class="hover:text-black">Sale</a></li>
+  <!-- FOOTER -->
+  <footer class="footer" style="background: #f9fafb; padding: 3rem 0 1.5rem; border-top: 1px solid #e5e7eb;">
+    <div class="footer-container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem;">
+      <div class="footer-column">
+        <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">About Us</h3>
+        <ul style="list-style: none;">
+          <li><a href="#" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Shipping & Returns</a></li>
         </ul>
       </div>
-
-      <!-- Customer Service -->
-      <div>
-        <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
-        <ul class="space-y-2 text-sm">
-          <li><a href="#" class="hover:text-black">Contact Us</a></li>
-          <li><a href="#" class="hover:text-black">FAQs</a></li>
-          <li><a href="#" class="hover:text-black">Shipping & Returns</a></li>
-          <li><a href="#" class="hover:text-black">Privacy Policy</a></li>
+      <div class="footer-column">
+        <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">Customer Service</h3>
+        <ul style="list-style: none;">
+          <li><a href="#" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Shipping & Returns</a></li>
+          <li><a href="#" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Size Guide</a></li>
         </ul>
       </div>
-
-      <!-- Newsletter & Social -->
-      <div>
-        <h3 class="text-lg font-semibold mb-3">Stay Connected</h3>
-        <p class="text-sm mb-3">Subscribe for updates & offers</p>
-        <form class="flex">
-          <input type="email" placeholder="Enter your email"
-            class="border border-gray-300 rounded-l-md p-2 w-full text-sm focus:outline-none">
-          <button type="submit" class="bg-black text-white px-4 rounded-r-md text-sm">Subscribe</button>
-        </form>
-        <div class="flex gap-4 mt-4 text-xl">
-          <a href="#"><i class="ri-facebook-fill hover:text-black"></i></a>
-          <a href="#"><i class="ri-instagram-fill hover:text-black"></i></a>
-          <a href="#"><i class="ri-twitter-fill hover:text-black"></i></a>
+      <div class="footer-column">
+        <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">FAQ</h3>
+        <ul style="list-style: none;">
+          <li><a href="#" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">Stay</h3>
+        <input type="email" class="newsletter-input" placeholder="Enter your email" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.9rem; margin-bottom: 1rem;">
+        <div class="payment-icons" style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <div class="payment-icon" style="width: 40px; height: 25px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #6b7280;">Visa</div>
+          <div class="payment-icon" style="width: 40px; height: 25px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #6b7280;">MC</div>
+          <div class="payment-icon" style="width: 40px; height: 25px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #6b7280;">PayPal</div>
         </div>
       </div>
-
     </div>
-
-    <!-- Bottom bar -->
-    <div class="border-t border-gray-300 mt-6 py-4 text-center text-sm text-gray-500">
+    <div class="footer-bottom" style="max-width: 1200px; margin: 2rem auto 0; padding: 1.5rem 2rem; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 0.875rem;">
       © 2025 KidsKorner. All Rights Reserved.
     </div>
   </footer>
