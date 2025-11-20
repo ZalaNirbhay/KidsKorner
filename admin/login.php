@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once('database/db_connection.php');
+include_once('../database/db_connection.php');
 
 // Check if already logged in as admin
 if (isset($_SESSION['admin_id']) && isset($_SESSION['admin_role']) && $_SESSION['admin_role'] == 'admin') {
-    header("Location: admin_dashboard.php");
+    header("Location: dashboard.php");
     exit;
 }
 
@@ -28,7 +28,7 @@ if (isset($_POST['admin_login'])) {
             $_SESSION['admin_email'] = $admin['email'];
             $_SESSION['admin_role'] = $admin['role'];
             
-            header("Location: admin_dashboard.php");
+            header("Location: dashboard.php");
             exit;
         } else {
             $error = "Your account is not verified. Please verify your email first.";
@@ -196,7 +196,7 @@ ob_start();
         </form>
 
         <div class="back-link">
-            <a href="index.php">← Back to Home</a>
+            <a href="../index.php">← Back to Home</a>
         </div>
     </div>
 </div>

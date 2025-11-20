@@ -37,11 +37,12 @@ VALUES ('Admin User', 'admin@kidskorner.com', 'your-password', 'admin', 'Active'
 ## 📁 File Structure
 
 ### Admin Pages Created:
-- `admin_login.php` - Admin login page
-- `admin_dashboard.php` - Main admin dashboard
-- `admin_categories.php` - Category management (add, edit, delete)
-- `admin_products.php` - Product management (add, edit, delete)
-- `admin_users.php` - User management (view all users)
+- `admin/login.php` - Admin login page
+- `admin/dashboard.php` - Main admin dashboard
+- `admin/categories.php` - Category management (add, edit, delete)
+- `admin/products.php` - Product management (add, edit, delete)
+- `admin/users.php` - User management (view all users)
+- `admin/orders.php` - Full order management panel
 
 ### Updated Pages:
 - `index.php` - Now fetches categories and products from database
@@ -52,7 +53,7 @@ VALUES ('Admin User', 'admin@kidskorner.com', 'your-password', 'admin', 'Active'
 ## 🚀 How to Use
 
 ### 1. Access Admin Login
-- Navigate to: `http://your-domain/admin_login.php`
+- Navigate to: `http://your-domain/admin/login.php`
 - Or click "Admin" link in the navigation bar
 
 ### 2. Login as Admin

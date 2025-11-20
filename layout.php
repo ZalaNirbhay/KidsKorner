@@ -224,7 +224,7 @@ if (isset($con) && $con instanceof mysqli) {
       </div>
 
       <div class="header-icons">
-        <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin_dashboard.php' : 'admin_login.php'; ?>" class="header-icon" title="<?php echo isset($_SESSION['admin_id']) ? 'Admin Dashboard' : 'Admin Login'; ?>">
+        <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin/dashboard.php' : 'admin/login.php'; ?>" class="header-icon" title="<?php echo isset($_SESSION['admin_id']) ? 'Admin Dashboard' : 'Admin Login'; ?>">
           <i class="ri-shield-user-line"></i>
           <span style="font-size: 0.85rem;"><?php echo isset($_SESSION['admin_id']) ? 'Admin' : 'Admin Login'; ?></span>
         </a>
@@ -263,7 +263,7 @@ if (isset($con) && $con instanceof mysqli) {
           </li>
         <?php endif; ?>
         <li class="nav-admin-link">
-          <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin_dashboard.php' : 'admin_login.php'; ?>">
+          <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin/dashboard.php' : 'admin/login.php'; ?>">
             <i class="ri-shield-user-line"></i>
             <?php echo isset($_SESSION['admin_id']) ? 'Admin Dashboard' : 'Admin Login'; ?>
           </a>

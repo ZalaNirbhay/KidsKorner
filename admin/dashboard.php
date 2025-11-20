@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once('database/db_connection.php');
+include_once('../database/db_connection.php');
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id']) || $_SESSION['admin_role'] != 'admin') {
-    header("Location: admin_login.php");
+    header("Location: login.php");
     exit;
 }
 
@@ -252,9 +252,9 @@ ob_start();
         <h1><i class="ri-dashboard-line"></i> Admin Dashboard</h1>
         <div class="admin-header-actions">
             <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
-            <a href="admin_dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
-            <a href="index.php" target="_blank"><i class="ri-external-link-line"></i> View Website</a>
-            <a href="logout.php"><i class="ri-logout-box-line"></i> Logout</a>
+            <a href="dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
+            <a href="../index.php" target="_blank"><i class="ri-external-link-line"></i> View Website</a>
+            <a href="../logout.php"><i class="ri-logout-box-line"></i> Logout</a>
         </div>
     </div>
 </div>
@@ -306,11 +306,11 @@ ob_start();
         <div class="admin-sidebar">
             <h3>Navigation</h3>
             <ul class="admin-menu">
-                <li><a href="admin_dashboard.php" class="active"><i class="ri-dashboard-line"></i> Dashboard</a></li>
-                <li><a href="admin_categories.php"><i class="ri-folder-line"></i> Categories</a></li>
-                <li><a href="admin_products.php"><i class="ri-shopping-bag-line"></i> Products</a></li>
-                <li><a href="admin_users.php"><i class="ri-user-line"></i> Users</a></li>
-                <li><a href="admin_orders.php"><i class="ri-file-list-line"></i> Orders</a></li>
+                <li><a href="dashboard.php" class="active"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+                <li><a href="categories.php"><i class="ri-folder-line"></i> Categories</a></li>
+                <li><a href="products.php"><i class="ri-shopping-bag-line"></i> Products</a></li>
+                <li><a href="users.php"><i class="ri-user-line"></i> Users</a></li>
+                <li><a href="orders.php"><i class="ri-file-list-line"></i> Orders</a></li>
             </ul>
         </div>
 
@@ -318,7 +318,7 @@ ob_start();
             <h2 class="page-title">Welcome to Admin Panel</h2>
             
             <div class="quick-actions">
-                <a href="admin_categories.php?action=add" class="action-card">
+                <a href="categories.php?action=add" class="action-card">
                     <i class="ri-add-circle-line"></i>
                     <div class="action-card-content">
                         <h3>Add Category</h3>
@@ -326,7 +326,7 @@ ob_start();
                     </div>
                 </a>
 
-                <a href="admin_products.php?action=add" class="action-card">
+                <a href="products.php?action=add" class="action-card">
                     <i class="ri-add-circle-line"></i>
                     <div class="action-card-content">
                         <h3>Add Product</h3>
@@ -334,7 +334,7 @@ ob_start();
                     </div>
                 </a>
 
-                <a href="admin_categories.php" class="action-card">
+                <a href="categories.php" class="action-card">
                     <i class="ri-edit-box-line"></i>
                     <div class="action-card-content">
                         <h3>Manage Categories</h3>
@@ -342,7 +342,7 @@ ob_start();
                     </div>
                 </a>
 
-                <a href="admin_products.php" class="action-card">
+                <a href="products.php" class="action-card">
                     <i class="ri-edit-box-line"></i>
                     <div class="action-card-content">
                         <h3>Manage Products</h3>
