@@ -1,6 +1,58 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once('database/db_connection.php');
+
+function kk_ensure_order_tables(mysqli $con): void
+{
+    $ordersTable = "
+        CREATE TABLE IF NOT EXISTS `orders` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `order_number` VARCHAR(50) UNIQUE,
+            `user_id` INT NOT NULL,
+            `full_name` VARCHAR(150) NOT NULL,
+            `email` VARCHAR(150) NOT NULL,
+            `phone` VARCHAR(50) NOT NULL,
+            `address_line1` VARCHAR(255) NOT NULL,
+            `address_line2` VARCHAR(255) NULL,
+            `city` VARCHAR(120) NOT NULL,
+            `state` VARCHAR(120) NOT NULL,
+            `postal_code` VARCHAR(30) NOT NULL,
+            `payment_method` ENUM('cod','upi') NOT NULL,
+            `upi_reference` VARCHAR(120) NULL,
+            `subtotal` DECIMAL(10,2) NOT NULL,
+            `shipping_amount` DECIMAL(10,2) NOT NULL,
+            `total_amount` DECIMAL(10,2) NOT NULL,
+            `status` VARCHAR(50) DEFAULT 'processing',
+            `payment_status` VARCHAR(50) DEFAULT 'pending',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (`user_id`) REFERENCES `registration`(`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+
+    $orderItemsTable = "
+        CREATE TABLE IF NOT EXISTS `order_items` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `order_id` INT NOT NULL,
+            `product_id` INT NOT NULL,
+            `product_name` VARCHAR(255) NOT NULL,
+            `quantity` INT NOT NULL,
+            `price` DECIMAL(10,2) NOT NULL,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE,
+            FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+
+    mysqli_query($con, $ordersTable);
+    mysqli_query($con, $orderItemsTable);
+}
+
+function kk_generate_order_number(): string
+{
+    return 'KK' . date('YmdHis') . random_int(100, 999);
+}
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -11,6 +63,9 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $message_type = '';
+$checkout_message = '';
+$checkout_type = '';
+$recent_order_number = '';
 
 // Handle update quantity
 if (isset($_POST['update_cart'])) {
@@ -59,6 +114,85 @@ while ($item = mysqli_fetch_assoc($cart_result)) {
 
 $shipping = 10.00; // Fixed shipping cost
 $total = $subtotal + $shipping;
+
+// Load profile defaults
+$profile_result = mysqli_query($con, "SELECT fullname, email, mobile, address FROM registration WHERE id = $user_id LIMIT 1");
+$profile = $profile_result ? mysqli_fetch_assoc($profile_result) : null;
+
+// Handle checkout submission
+if (isset($_POST['place_order'])) {
+    if (count($cart_items) === 0) {
+        $checkout_message = "Your cart is empty. Please add products before checking out.";
+        $checkout_type = "error";
+    } else {
+        $full_name = mysqli_real_escape_string($con, trim($_POST['full_name'] ?? ''));
+        $phone = mysqli_real_escape_string($con, trim($_POST['phone'] ?? ''));
+        $address_line1 = mysqli_real_escape_string($con, trim($_POST['address_line1'] ?? ''));
+        $address_line2 = mysqli_real_escape_string($con, trim($_POST['address_line2'] ?? ''));
+        $city = mysqli_real_escape_string($con, trim($_POST['city'] ?? ''));
+        $state = mysqli_real_escape_string($con, trim($_POST['state'] ?? ''));
+        $postal_code = mysqli_real_escape_string($con, trim($_POST['postal_code'] ?? ''));
+        $payment_method = in_array($_POST['payment_method'] ?? '', ['cod', 'upi']) ? $_POST['payment_method'] : '';
+        $upi_reference = mysqli_real_escape_string($con, trim($_POST['upi_reference'] ?? ''));
+        $email = mysqli_real_escape_string($con, $_SESSION['user_email'] ?? ($profile['email'] ?? ''));
+
+        if (!$full_name || !$phone || !$address_line1 || !$city || !$state || !$postal_code || !$payment_method) {
+            $checkout_message = "Please complete all required checkout fields.";
+            $checkout_type = "error";
+        } elseif ($payment_method === 'upi' && !$upi_reference) {
+            $checkout_message = "UPI payment selected. Please provide your UPI ID.";
+            $checkout_type = "error";
+        } else {
+            kk_ensure_order_tables($con);
+            $order_number = kk_generate_order_number();
+
+            $order_sql = "
+                INSERT INTO orders
+                (order_number, user_id, full_name, email, phone, address_line1, address_line2, city, state, postal_code, payment_method, upi_reference, subtotal, shipping_amount, total_amount)
+                VALUES
+                ('{$order_number}', {$user_id}, '{$full_name}', '{$email}', '{$phone}', '{$address_line1}', '{$address_line2}', '{$city}', '{$state}', '{$postal_code}', '{$payment_method}', '{$upi_reference}', {$subtotal}, {$shipping}, {$total})
+            ";
+
+            if (mysqli_query($con, $order_sql)) {
+                $order_id = mysqli_insert_id($con);
+                $items_saved = true;
+
+                foreach ($cart_items as $item) {
+                    $product_id = (int) $item['product_id'];
+                    $product_name = mysqli_real_escape_string($con, $item['name']);
+                    $quantity = (int) $item['quantity'];
+                    $price = (float) $item['price'];
+
+                    $item_sql = "
+                        INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
+                        VALUES ({$order_id}, {$product_id}, '{$product_name}', {$quantity}, {$price})
+                    ";
+
+                    if (!mysqli_query($con, $item_sql)) {
+                        $items_saved = false;
+                        break;
+                    }
+                }
+
+                if ($items_saved) {
+                    mysqli_query($con, "DELETE FROM cart WHERE user_id = $user_id");
+                    $cart_items = [];
+                    $subtotal = 0;
+                    $total = $shipping;
+                    $checkout_message = "Order placed successfully! Your order number is {$order_number}.";
+                    $checkout_type = "success";
+                    $recent_order_number = $order_number;
+                } else {
+                    $checkout_message = "Unable to save order items. Please try again.";
+                    $checkout_type = "error";
+                }
+            } else {
+                $checkout_message = "Order could not be created. Please try again.";
+                $checkout_type = "error";
+            }
+        }
+    }
+}
 
 ob_start();
 ?>
@@ -237,6 +371,76 @@ ob_start();
         top: 2rem;
     }
 
+    .checkout-form {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .checkout-form h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .checkout-grid label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .checkout-grid .form-control {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .payment-options {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .payment-option {
+        flex: 1;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0.75rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .payment-option input {
+        margin-right: 0.5rem;
+    }
+
+    .checkout-alert {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .checkout-alert.success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .checkout-alert.error {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
     .summary-title {
         font-size: 1.5rem;
         font-weight: 700;
@@ -411,10 +615,73 @@ ob_start();
                         <span>Total</span>
                         <span>$<?php echo number_format($total, 2); ?></span>
                     </div>
-                    
-                    <button class="btn-checkout" onclick="alert('Checkout functionality will be implemented soon!');">
-                        Proceed to Checkout
-                    </button>
+
+                    <div class="checkout-form">
+                        <h3>Checkout Details</h3>
+
+                        <?php if ($checkout_message): ?>
+                            <div class="checkout-alert <?php echo $checkout_type; ?>">
+                                <?php echo htmlspecialchars($checkout_message); ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="post">
+                            <input type="hidden" name="place_order" value="1">
+                            <div class="checkout-grid">
+                                <div>
+                                    <label>Full Name *</label>
+                                    <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($profile['fullname'] ?? ($_SESSION['user_name'] ?? '')); ?>" required>
+                                </div>
+                                <div>
+                                    <label>Email *</label>
+                                    <input type="email" class="form-control" value="<?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?>" readonly>
+                                </div>
+                                <div>
+                                    <label>Phone *</label>
+                                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($profile['mobile'] ?? ''); ?>" required>
+                                </div>
+                                <div>
+                                    <label>Address Line 1 *</label>
+                                    <input type="text" name="address_line1" class="form-control" value="<?php echo htmlspecialchars($profile['address'] ?? ''); ?>" required>
+                                </div>
+                                <div>
+                                    <label>Address Line 2</label>
+                                    <input type="text" name="address_line2" class="form-control" placeholder="Apartment, suite, etc.">
+                                </div>
+                                <div>
+                                    <label>City *</label>
+                                    <input type="text" name="city" class="form-control" required>
+                                </div>
+                                <div>
+                                    <label>State *</label>
+                                    <input type="text" name="state" class="form-control" required>
+                                </div>
+                                <div>
+                                    <label>Postal Code *</label>
+                                    <input type="text" name="postal_code" class="form-control" required>
+                                </div>
+                                <div>
+                                    <label>Payment Method *</label>
+                                    <div class="payment-options">
+                                        <label class="payment-option">
+                                            <input type="radio" name="payment_method" value="cod" checked> Cash on Delivery
+                                        </label>
+                                        <label class="payment-option">
+                                            <input type="radio" name="payment_method" value="upi"> UPI Payment
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="upiField" style="display: none;">
+                                    <label>UPI ID / Reference *</label>
+                                    <input type="text" name="upi_reference" class="form-control" placeholder="yourname@upi">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-checkout" style="margin-top: 1rem;">
+                                Proceed to Checkout
+                            </button>
+                        </form>
+                    </div>
                     
                     <a href="index.php" class="btn-continue" style="display: block; text-align: center; margin-top: 1rem;">
                         Continue Shopping
@@ -433,6 +700,33 @@ ob_start();
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    const upiField = document.getElementById('upiField');
+    const upiInput = upiField ? upiField.querySelector('input') : null;
+
+    function toggleUpiField() {
+        if (!upiField || !upiInput) return;
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        if (selected && selected.value === 'upi') {
+            upiField.style.display = 'block';
+            upiInput.setAttribute('required', 'required');
+        } else {
+            upiField.style.display = 'none';
+            upiInput.removeAttribute('required');
+            upiInput.value = '';
+        }
+    }
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', toggleUpiField);
+    });
+
+    toggleUpiField();
+});
+</script>
 
 <?php
 $content = ob_get_clean();

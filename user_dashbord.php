@@ -137,13 +137,37 @@ ob_start();
 
                 <!-- Overview Cards -->
                 <div class="row g-4 mb-5">
+                    <?php
+                    $user_id = $_SESSION['user_id'];
+                    
+                    // Get cart count
+                    $cart_count_query = "SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id";
+                    $cart_count_result = mysqli_query($con, $cart_count_query);
+                    $cart_count = mysqli_fetch_assoc($cart_count_result)['total'] ?? 0;
+                    
+                    // Get wishlist count
+                    $wishlist_count_query = "SELECT COUNT(*) as total FROM wishlist WHERE user_id = $user_id";
+                    $wishlist_count_result = mysqli_query($con, $wishlist_count_query);
+                    $wishlist_count = mysqli_fetch_assoc($wishlist_count_result)['total'] ?? 0;
+                    
+                    // Get orders count (check if orders table exists first)
+                    $orders_count = 0;
+                    $orders_table_exists = mysqli_query($con, "SHOW TABLES LIKE 'orders'");
+                    if ($orders_table_exists && mysqli_num_rows($orders_table_exists) > 0) {
+                        $orders_count_query = "SELECT COUNT(*) as total FROM orders WHERE user_id = $user_id";
+                        $orders_count_result = mysqli_query($con, $orders_count_query);
+                        if ($orders_count_result) {
+                            $orders_count = mysqli_fetch_assoc($orders_count_result)['total'] ?? 0;
+                        }
+                    }
+                    ?>
                     <!-- Cart Overview -->
                     <div class="col-md-4">
                         <div class="card text-center overview-card p-4">
                             <div class="overview-icon-wrapper mx-auto">
                                 <i class="fa-solid fa-cart-shopping fa-xl"></i>
                             </div>
-                            <p class="mb-1 card-stat-number">3</p>
+                            <p class="mb-1 card-stat-number"><?php echo $cart_count; ?></p>
                             <h6 class="fw-bold mb-0 text-muted">Items in Cart</h6>
                             <a href="cart.php" class="stretched-link"></a>
                         </div>
@@ -154,7 +178,7 @@ ob_start();
                             <div class="overview-icon-wrapper mx-auto">
                                 <i class="fa-solid fa-heart fa-xl"></i>
                             </div>
-                            <p class="mb-1 card-stat-number">5</p>
+                            <p class="mb-1 card-stat-number"><?php echo $wishlist_count; ?></p>
                             <h6 class="fw-bold mb-0 text-muted">Items in Wishlist</h6>
                             <a href="wishlist.php" class="stretched-link"></a>
                         </div>
@@ -165,7 +189,7 @@ ob_start();
                             <div class="overview-icon-wrapper mx-auto">
                                 <i class="fa-solid fa-box fa-xl"></i>
                             </div>
-                            <p class="mb-1 card-stat-number">12</p>
+                            <p class="mb-1 card-stat-number"><?php echo $orders_count; ?></p>
                             <h6 class="fw-bold mb-0 text-muted">Total Orders</h6>
                             <a href="order_history.php" class="stretched-link"></a>
                         </div>
@@ -216,8 +240,7 @@ ob_start();
                     <!-- Navigation Menu -->
                     <div class="list-group list-group-flush">
                         <a href="#" class="list-group-item list-group-item-action active"><i class="fa-solid fa-gauge me-2"></i>Dashboard Overview</a>
-                        <a href="edit_profile.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-user-pen me-2"></i>Edit Profile</a>
-                        <a href="change_password.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-key me-2"></i>Change Password</a>
+                        <a href="edit_profile.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-user-pen me-2"></i>Profile &amp; Security</a>
                         <a href="cart.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-cart-shopping me-2"></i>Shopping Cart</a>
                         <a href="wishlist.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-heart me-2"></i>Wishlist</a>
                         <a href="order_history.php" class="list-group-item list-group-item-action"><i class="fa-solid fa-box-open me-2"></i>Order History</a>

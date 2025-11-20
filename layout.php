@@ -1,5 +1,22 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($con)) {
+    include_once('database/db_connection.php');
+}
+
+$header_categories = [];
+if (isset($con) && $con instanceof mysqli) {
+    $category_sql = "SELECT id, name FROM categories WHERE status = 'active' ORDER BY name";
+    $category_result = mysqli_query($con, $category_sql);
+    if ($category_result) {
+        while ($category = mysqli_fetch_assoc($category_result)) {
+            $header_categories[] = $category;
+        }
+    }
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -136,9 +153,16 @@ session_start();
 
     .nav-links {
       display: flex;
-      justify-content: center;
-      gap: 2rem;
+      justify-content: flex-start;
+      gap: 1.5rem;
       list-style: none;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-links a {
@@ -149,11 +173,29 @@ session_start();
       padding: 0.5rem 0;
       transition: color 0.3s;
       text-transform: capitalize;
+      white-space: nowrap;
     }
 
     .nav-links a:hover,
     .nav-links a.active {
       color: #b8735c;
+    }
+
+    .nav-login-link a {
+      color: #b8735c;
+      font-weight: 600;
+    }
+
+    .nav-admin-link a {
+      color: #667eea;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-admin-link i {
+      font-size: 1rem;
     }
   </style>
 </head>
@@ -192,21 +234,28 @@ session_start();
   <nav class="nav-bar">
     <div class="nav-container">
       <ul class="nav-links">
-        <li><a href="index.php">Newborns</a></li>
-        <li><a href="#">Infants</a></li>
-        <li><a href="#" class="active">Toddlers</a></li>
-        <li><a href="#">Preschool</a></li>
-        <li><a href="#">Sale</a></li>
-        <?php if (!isset($_SESSION['user_email'])): ?>
-        <li><a href="login.php" style="color: #b8735c; font-weight: 600;">Login</a></li>
-        <li><a href="register.php" style="color: #b8735c; font-weight: 600;">Register</a></li>
+        <?php if (!empty($header_categories)): ?>
+          <?php foreach ($header_categories as $category): ?>
+            <li>
+              <a href="category.php?id=<?php echo $category['id']; ?>">
+                <?php echo htmlspecialchars($category['name']); ?>
+              </a>
+            </li>
+          <?php endforeach; ?>
         <?php else: ?>
-        <li><a href="user_dashbord.php" style="color: #b8735c; font-weight: 600;">Dashboard</a></li>
-        <li><a href="logout.php" style="color: #dc2626; font-weight: 600;">Logout</a></li>
+          <li style="color: #9ca3af;">No categories available</li>
         <?php endif; ?>
-        <?php if (!isset($_SESSION['admin_id'])): ?>
-        <li><a href="admin_login.php" style="color: #667eea; font-weight: 600;"><i class="ri-shield-user-line"></i> Admin</a></li>
+        <?php if (!isset($_SESSION['user_email'])): ?>
+          <li class="nav-login-link">
+            <a href="login.php">Login</a>
+          </li>
         <?php endif; ?>
+        <li class="nav-admin-link">
+          <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin_dashboard.php' : 'admin_login.php'; ?>">
+            <i class="ri-shield-user-line"></i>
+            <?php echo isset($_SESSION['admin_id']) ? 'Admin Dashboard' : 'Admin Login'; ?>
+          </a>
+        </li>
       </ul>
     </div>
   </nav>

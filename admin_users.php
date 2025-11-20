@@ -202,7 +202,7 @@ ob_start();
         <div class="admin-header-actions">
             <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
             <a href="admin_dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
-            <a href="index.php"><i class="ri-home-line"></i> Home</a>
+            <a href="index.php" target="_blank"><i class="ri-external-link-line"></i> View Website</a>
             <a href="logout.php"><i class="ri-logout-box-line"></i> Logout</a>
         </div>
     </div>
@@ -217,6 +217,7 @@ ob_start();
                 <li><a href="admin_categories.php"><i class="ri-folder-line"></i> Categories</a></li>
                 <li><a href="admin_products.php"><i class="ri-shopping-bag-line"></i> Products</a></li>
                 <li><a href="admin_users.php" class="active"><i class="ri-user-line"></i> Users</a></li>
+                <li><a href="admin_orders.php"><i class="ri-file-list-line"></i> Orders</a></li>
             </ul>
         </div>
 

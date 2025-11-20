@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once('database/db_connection.php');
 
 // Fetch active categories from database
@@ -206,6 +208,37 @@ ob_start();
     color: #ffffff;
   }
 
+  .product-action-btn.wishlisted {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .product-action-btn.wishlisted:hover {
+    background: #fecaca;
+    color: #dc2626;
+  }
+
+  .btn-add-cart {
+    width: 100%;
+    background: #b8735c;
+    color: #ffffff;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-add-cart:hover {
+    background: #9a5b45;
+  }
+
   .product-info {
     padding: 1.5rem;
   }
@@ -223,76 +256,10 @@ ob_start();
     color: #1f2937;
   }
 
-  /* Eco-Friendly Section */
-  .eco-section {
-    background: #f9fafb;
-    padding: 4rem 0;
-  }
-
-  .eco-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-      align-items: center;
-  }
-
-  .eco-product-card {
-    background: #ffffff;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .eco-product-image-wrapper {
-    padding: 2rem;
-    background: #f9fafb;
-      text-align: center;
-  }
-
-  .eco-product-image {
-    width: 100%;
-    height: 300px;
-    object-fit: contain;
-  }
-
-  .eco-product-info {
-    padding: 2rem;
-  }
-
-  .eco-product-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-      margin-bottom: 1rem;
-  }
-
-  .eco-product-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 1.5rem;
-  }
-
-  .eco-link {
-    color: #b8735c;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-top: 1rem;
-    display: inline-block;
-  }
-
-  .eco-link:hover {
-    text-decoration: underline;
-  }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .hero-container,
-    .eco-container {
+    .hero-container {
       grid-template-columns: 1fr;
     }
 
@@ -373,11 +340,17 @@ ob_start();
                      class="product-image">
               <?php endif; ?>
               <?php if (isset($_SESSION['user_id'])): ?>
+                <?php
+                // Check if product is in wishlist
+                $user_id = $_SESSION['user_id'];
+                $wishlist_check = mysqli_query($con, "SELECT * FROM wishlist WHERE user_id = $user_id AND product_id = " . $product['id']);
+                $is_wishlisted = mysqli_num_rows($wishlist_check) > 0;
+                ?>
                 <div class="product-actions">
-                  <a href="#" class="product-action-btn add-to-cart" 
+                  <a href="#" class="product-action-btn add-to-wishlist <?php echo $is_wishlisted ? 'wishlisted' : ''; ?>" 
                      data-product-id="<?php echo $product['id']; ?>"
-                     title="Add to Wishlist">
-                    <i class="ri-heart-line"></i>
+                     title="<?php echo $is_wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
+                    <i class="ri-heart-<?php echo $is_wishlisted ? 'fill' : 'line'; ?>"></i>
                   </a>
                   <a href="#" class="product-action-btn add-to-cart" 
                      data-product-id="<?php echo $product['id']; ?>"
@@ -385,17 +358,52 @@ ob_start();
                     <i class="ri-shopping-cart-line"></i>
                   </a>
                 </div>
-              <?php else: ?>
-                <div class="product-actions">
-                  <a href="login.php" class="product-action-btn" title="Login to Add">
-                    <i class="ri-login-box-line"></i>
-                  </a>
-                </div>
               <?php endif; ?>
             </div>
             <div class="product-info">
               <div class="product-name"><?php echo htmlspecialchars($product['name']); ?></div>
-              <div class="product-price">$<?php echo number_format($product['price'], 2); ?></div>
+              <?php if (!empty($product['description'])): ?>
+                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
+                  <?php echo htmlspecialchars(substr($product['description'], 0, 60)) . (strlen($product['description']) > 60 ? '...' : ''); ?>
+                </div>
+              <?php endif; ?>
+              <?php
+              $current_price = $product['current_price'] ?? $product['price'];
+              $original_price = $product['original_price'] ?? $product['price'];
+              $discount_percentage = $product['discount_percentage'] ?? 0;
+              $has_discount = $discount_percentage > 0 && $current_price < $original_price;
+              ?>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <div class="product-price">$<?php echo number_format($current_price, 2); ?></div>
+                <?php if ($has_discount): ?>
+                  <span style="font-size: 0.9rem; color: #9ca3af; text-decoration: line-through;">
+                    $<?php echo number_format($original_price, 2); ?>
+                  </span>
+                  <span style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                    -<?php echo number_format($discount_percentage, 0); ?>%
+                  </span>
+                <?php endif; ?>
+              </div>
+              <?php if (isset($product['stock'])): ?>
+                <?php if ($product['stock'] > 0): ?>
+                  <div style="font-size: 0.85rem; color: #10b981; margin-top: 0.5rem;">
+                    <i class="ri-checkbox-circle-line"></i> In Stock (<?php echo $product['stock']; ?>)
+                  </div>
+                <?php else: ?>
+                  <div style="font-size: 0.85rem; color: #dc2626; margin-top: 0.5rem;">
+                    <i class="ri-close-circle-line"></i> Out of Stock
+                  </div>
+                <?php endif; ?>
+              <?php endif; ?>
+              <?php if (isset($_SESSION['user_id'])): ?>
+                <button class="btn-add-cart add-to-cart" data-product-id="<?php echo $product['id']; ?>">
+                  <i class="ri-shopping-cart-line"></i> Add to Cart
+                </button>
+              <?php else: ?>
+                <a href="login.php" class="btn-add-cart" style="background: #1f2937;">
+                  <i class="ri-login-box-line"></i> Login to Shop
+                </a>
+              <?php endif; ?>
             </div>
           </div>
         <?php endwhile; ?>
@@ -408,29 +416,10 @@ ob_start();
   </div>
 </section>
 
-<!-- Eco-Friendly Picks Section -->
-<section class="eco-section">
-  <div class="eco-container">
-    <div>
-      <h2 class="section-title">Eco-Friendly Picks</h2>
-      <div class="eco-product-card">
-        <div class="eco-product-image-wrapper">
-          <img src="asetes/images/shop-wheel.png" alt="Eco Product" class="eco-product-image">
-  </div>
-        <div class="eco-product-info">
-          <div class="eco-product-name">Daster Cenn Pliets</div>
-          <div class="eco-product-price">$74.90</div>
-          <a href="#" class="btn-primary">Add to Cart</a>
-          <br>
-          <a href="#" class="eco-link">Learn More About Our Commitment</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add to cart functionality
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     
     addToCartButtons.forEach(button => {
@@ -456,6 +445,45 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error adding product to cart');
+            });
+        });
+    });
+
+    // Add to wishlist functionality
+    const addToWishlistButtons = document.querySelectorAll('.add-to-wishlist');
+    
+    addToWishlistButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            const icon = this.querySelector('i');
+            
+            fetch('add_to_wishlist.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'product_id=' + productId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_wishlisted) {
+                        icon.className = 'ri-heart-fill';
+                        this.classList.add('wishlisted');
+                        this.setAttribute('title', 'Remove from Wishlist');
+                    } else {
+                        icon.className = 'ri-heart-line';
+                        this.classList.remove('wishlisted');
+                        this.setAttribute('title', 'Add to Wishlist');
+                    }
+                } else {
+                    alert(data.message || 'Error updating wishlist');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating wishlist');
             });
         });
     });

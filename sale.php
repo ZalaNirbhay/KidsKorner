@@ -4,67 +4,49 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include_once('database/db_connection.php');
 
-// Get category ID
-$category_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($category_id == 0) {
-    header("Location: index.php");
-    exit;
-}
-
-// Get category details
-$category_query = "SELECT * FROM categories WHERE id = $category_id AND status = 'active'";
-$category_result = mysqli_query($con, $category_query);
-
-if (mysqli_num_rows($category_result) == 0) {
-    header("Location: index.php");
-    exit;
-}
-
-$category = mysqli_fetch_assoc($category_result);
-
-// Get products for this category
+// Get products with discount
 $products_query = "SELECT p.*, c.name as category_name FROM products p 
                    LEFT JOIN categories c ON p.category_id = c.id 
-                   WHERE p.category_id = $category_id AND p.status = 'active' 
-                   ORDER BY p.created_at DESC";
+                   WHERE p.status = 'active' 
+                   AND (p.discount_percentage > 0 OR (p.current_price IS NOT NULL AND p.original_price IS NOT NULL AND p.current_price < p.original_price))
+                   ORDER BY p.discount_percentage DESC, p.created_at DESC";
 $products_result = mysqli_query($con, $products_query);
 
 ob_start();
 ?>
 
 <style>
-    .category-page {
+    .sale-page {
         padding: 4rem 0;
         background: #f9fafb;
     }
 
-    .category-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .sale-header {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
         color: #ffffff;
         padding: 3rem 0;
         margin-bottom: 3rem;
-    }
-
-    .category-header-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 2rem;
         text-align: center;
     }
 
-    .category-header h1 {
-        font-size: 2.5rem;
+    .sale-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .sale-header h1 {
+        font-size: 3rem;
         font-weight: 700;
         margin-bottom: 1rem;
     }
 
-    .category-header p {
-        font-size: 1.1rem;
+    .sale-header p {
+        font-size: 1.2rem;
         opacity: 0.9;
     }
 
-    .category-container {
+    .sale-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 2rem;
@@ -101,6 +83,19 @@ ob_start();
         width: 100%;
         height: 250px;
         object-fit: contain;
+    }
+
+    .discount-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: #dc2626;
+        color: #ffffff;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        z-index: 10;
     }
 
     .product-actions {
@@ -142,23 +137,6 @@ ob_start();
         color: #dc2626;
     }
 
-    .btn-add-cart {
-        width: 100%;
-        background: #b8735c;
-        color: #ffffff;
-        padding: 0.75rem;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 0.5rem;
-        transition: background 0.3s;
-    }
-
-    .btn-add-cart:hover {
-        background: #9a5b45;
-    }
-
     .product-info {
         padding: 1.5rem;
     }
@@ -170,79 +148,86 @@ ob_start();
         margin-bottom: 0.5rem;
     }
 
-    .product-price {
-        font-size: 1.25rem;
+    .product-price-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-current-price {
+        font-size: 1.5rem;
         font-weight: 700;
-        color: #1f2937;
+        color: #dc2626;
     }
 
-    .login-prompt {
-        background: #fef3c7;
-        border: 2px solid #fbbf24;
-        border-radius: 12px;
-        padding: 2rem;
-        text-align: center;
-        margin-bottom: 2rem;
+    .product-original-price {
+        font-size: 1.1rem;
+        color: #9ca3af;
+        text-decoration: line-through;
     }
 
-    .login-prompt h3 {
-        color: #92400e;
-        margin-bottom: 1rem;
-    }
-
-    .login-prompt p {
-        color: #78350f;
-        margin-bottom: 1rem;
-    }
-
-    .btn-login {
-        background: #b8735c;
-        color: #ffffff;
-        padding: 0.75rem 2rem;
-        border: none;
-        border-radius: 8px;
-        text-decoration: none;
-        display: inline-block;
+    .product-discount {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
         font-weight: 600;
-        transition: background 0.3s;
-    }
-
-    .btn-login:hover {
-        background: #9a5b45;
-        color: #ffffff;
     }
 
     .no-products {
         text-align: center;
         padding: 4rem 2rem;
-        color: #6b7280;
+        background: #ffffff;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-products-icon {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
     }
 </style>
 
-<div class="category-header">
-    <div class="category-header-content">
-        <h1><?php echo htmlspecialchars($category['name']); ?></h1>
-        <?php if ($category['description']): ?>
-            <p><?php echo htmlspecialchars($category['description']); ?></p>
-        <?php endif; ?>
+<div class="sale-header">
+    <div class="sale-header-content">
+        <h1>🔥 Sale Items</h1>
+        <p>Special discounts on selected products - Limited time offers!</p>
     </div>
 </div>
 
-<section class="category-page">
-    <div class="category-container">
-        <?php if (!isset($_SESSION['user_id'])): ?>
-            <div class="login-prompt">
-                <h3><i class="ri-information-line"></i> Login Required</h3>
-                <p>Please login to add products to cart and make purchases.</p>
-                <a href="login.php" class="btn-login">Login Now</a>
-            </div>
-        <?php endif; ?>
-
+<section class="sale-page">
+    <div class="sale-container">
         <div class="products-grid">
             <?php if (mysqli_num_rows($products_result) > 0): ?>
                 <?php while ($product = mysqli_fetch_assoc($products_result)): ?>
+                    <?php
+                    $current_price = $product['current_price'] ?? $product['price'];
+                    $original_price = $product['original_price'] ?? $product['price'];
+                    $discount_percentage = $product['discount_percentage'] ?? 0;
+                    
+                    // Calculate discount if not set
+                    if ($discount_percentage == 0 && $original_price > $current_price) {
+                        $discount_percentage = round((($original_price - $current_price) / $original_price) * 100, 2);
+                    }
+                    
+                    $has_discount = $discount_percentage > 0 && $current_price < $original_price;
+                    
+                    // Check if product is in wishlist
+                    $is_wishlisted = false;
+                    if (isset($_SESSION['user_id'])) {
+                        $user_id = $_SESSION['user_id'];
+                        $wishlist_check = mysqli_query($con, "SELECT * FROM wishlist WHERE user_id = $user_id AND product_id = " . $product['id']);
+                        $is_wishlisted = mysqli_num_rows($wishlist_check) > 0;
+                    }
+                    ?>
                     <div class="product-card">
                         <div class="product-image-wrapper">
+                            <?php if ($has_discount): ?>
+                                <div class="discount-badge">-<?php echo number_format($discount_percentage, 0); ?>% OFF</div>
+                            <?php endif; ?>
                             <?php if ($product['image']): ?>
                                 <img src="images/products/<?php echo htmlspecialchars($product['image']); ?>" 
                                      alt="<?php echo htmlspecialchars($product['name']); ?>" 
@@ -253,12 +238,6 @@ ob_start();
                                      class="product-image">
                             <?php endif; ?>
                             <?php if (isset($_SESSION['user_id'])): ?>
-                                <?php
-                                // Check if product is in wishlist
-                                $user_id = $_SESSION['user_id'];
-                                $wishlist_check = mysqli_query($con, "SELECT * FROM wishlist WHERE user_id = $user_id AND product_id = " . $product['id']);
-                                $is_wishlisted = mysqli_num_rows($wishlist_check) > 0;
-                                ?>
                                 <div class="product-actions">
                                     <a href="#" class="product-action-btn add-to-wishlist <?php echo $is_wishlisted ? 'wishlisted' : ''; ?>" 
                                        data-product-id="<?php echo $product['id']; ?>"
@@ -271,30 +250,24 @@ ob_start();
                                         <i class="ri-shopping-cart-line"></i>
                                     </a>
                                 </div>
+                            <?php else: ?>
+                                <div class="product-actions">
+                                    <a href="login.php" class="product-action-btn" title="Login to Add">
+                                        <i class="ri-login-box-line"></i>
+                                    </a>
+                                </div>
                             <?php endif; ?>
                         </div>
                         <div class="product-info">
                             <div class="product-name"><?php echo htmlspecialchars($product['name']); ?></div>
-                            <?php if ($product['description']): ?>
-                                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
-                                    <?php echo htmlspecialchars(substr($product['description'], 0, 60)) . '...'; ?>
-                                </div>
-                            <?php endif; ?>
-                            <?php
-                            $current_price = $product['current_price'] ?? $product['price'];
-                            $original_price = $product['original_price'] ?? $product['price'];
-                            $discount_percentage = $product['discount_percentage'] ?? 0;
-                            $has_discount = $discount_percentage > 0 && $current_price < $original_price;
-                            ?>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <div class="product-price">$<?php echo number_format($current_price, 2); ?></div>
+                            <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
+                            </div>
+                            <div class="product-price-container">
+                                <span class="product-current-price">$<?php echo number_format($current_price, 2); ?></span>
                                 <?php if ($has_discount): ?>
-                                    <span style="font-size: 0.9rem; color: #9ca3af; text-decoration: line-through;">
-                                        $<?php echo number_format($original_price, 2); ?>
-                                    </span>
-                                    <span style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
-                                        -<?php echo number_format($discount_percentage, 0); ?>%
-                                    </span>
+                                    <span class="product-original-price">$<?php echo number_format($original_price, 2); ?></span>
+                                    <span class="product-discount">Save $<?php echo number_format($original_price - $current_price, 2); ?></span>
                                 <?php endif; ?>
                             </div>
                             <?php if ($product['stock'] > 0): ?>
@@ -306,18 +279,19 @@ ob_start();
                                     <i class="ri-close-circle-line"></i> Out of Stock
                                 </div>
                             <?php endif; ?>
-                            <?php if (isset($_SESSION['user_id'])): ?>
-                                <button class="btn-add-cart add-to-cart" data-product-id="<?php echo $product['id']; ?>">
-                                    <i class="ri-shopping-cart-line"></i> Add to Cart
-                                </button>
-                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>
-                <div class="no-products">
-                    <h3>No products found in this category</h3>
-                    <p>Check back later for new products!</p>
+                <div class="no-products" style="grid-column: 1 / -1;">
+                    <div class="no-products-icon">
+                        <i class="ri-fire-line"></i>
+                    </div>
+                    <h3>No Sale Items Available</h3>
+                    <p>Check back later for special discounts!</p>
+                    <a href="products.php" style="display: inline-block; margin-top: 1rem; color: #b8735c; text-decoration: none; font-weight: 600;">
+                        Browse All Products →
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
@@ -345,14 +319,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     alert('Product added to cart!');
-                    // Update cart count if you have a cart counter
-                    if (data.cart_count !== undefined) {
-                        // Update cart count in header if exists
-                        const cartCount = document.querySelector('.cart-count');
-                        if (cartCount) {
-                            cartCount.textContent = data.cart_count;
-                        }
-                    }
                 } else {
                     alert(data.message || 'Error adding product to cart');
                 }

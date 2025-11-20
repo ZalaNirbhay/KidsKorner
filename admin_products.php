@@ -16,6 +16,9 @@ if (isset($_POST['add_product'])) {
     $name = mysqli_real_escape_string($con, $_POST['name']);
     $description = mysqli_real_escape_string($con, $_POST['description']);
     $price = $_POST['price'];
+    $original_price = isset($_POST['original_price']) && $_POST['original_price'] ? $_POST['original_price'] : $price;
+    $current_price = isset($_POST['current_price']) && $_POST['current_price'] ? $_POST['current_price'] : $price;
+    $discount_percentage = isset($_POST['discount_percentage']) ? $_POST['discount_percentage'] : 0;
     $category_id = $_POST['category_id'];
     $stock = $_POST['stock'];
     $status = $_POST['status'];
@@ -35,8 +38,8 @@ if (isset($_POST['add_product'])) {
         }
     }
     
-    $query = "INSERT INTO products (name, description, price, category_id, image, stock, status) 
-              VALUES ('$name', '$description', $price, $category_id, '$image', $stock, '$status')";
+    $query = "INSERT INTO products (name, description, price, original_price, current_price, discount_percentage, category_id, image, stock, status) 
+              VALUES ('$name', '$description', $price, $original_price, $current_price, $discount_percentage, $category_id, '$image', $stock, '$status')";
     
     if (mysqli_query($con, $query)) {
         $message = "Product added successfully!";
@@ -53,6 +56,9 @@ if (isset($_POST['update_product'])) {
     $name = mysqli_real_escape_string($con, $_POST['name']);
     $description = mysqli_real_escape_string($con, $_POST['description']);
     $price = $_POST['price'];
+    $original_price = isset($_POST['original_price']) && $_POST['original_price'] ? $_POST['original_price'] : $price;
+    $current_price = isset($_POST['current_price']) && $_POST['current_price'] ? $_POST['current_price'] : $price;
+    $discount_percentage = isset($_POST['discount_percentage']) ? $_POST['discount_percentage'] : 0;
     $category_id = $_POST['category_id'];
     $stock = $_POST['stock'];
     $status = $_POST['status'];
@@ -73,7 +79,8 @@ if (isset($_POST['update_product'])) {
     }
     
     $query = "UPDATE products SET name = '$name', description = '$description', 
-              price = $price, category_id = $category_id, stock = $stock, status = '$status' 
+              price = $price, original_price = $original_price, current_price = $current_price, 
+              discount_percentage = $discount_percentage, category_id = $category_id, stock = $stock, status = '$status' 
               $image_query WHERE id = $id";
     
     if (mysqli_query($con, $query)) {
@@ -419,7 +426,7 @@ ob_start();
         <div class="admin-header-actions">
             <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
             <a href="admin_dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
-            <a href="index.php"><i class="ri-home-line"></i> Home</a>
+            <a href="index.php" target="_blank"><i class="ri-external-link-line"></i> View Website</a>
             <a href="logout.php"><i class="ri-logout-box-line"></i> Logout</a>
         </div>
     </div>
@@ -434,6 +441,7 @@ ob_start();
                 <li><a href="admin_categories.php"><i class="ri-folder-line"></i> Categories</a></li>
                 <li><a href="admin_products.php" class="active"><i class="ri-shopping-bag-line"></i> Products</a></li>
                 <li><a href="admin_users.php"><i class="ri-user-line"></i> Users</a></li>
+                <li><a href="admin_orders.php"><i class="ri-file-list-line"></i> Orders</a></li>
             </ul>
         </div>
 
@@ -484,9 +492,32 @@ ob_start();
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Price ($) *</label>
+                            <label class="form-label">Base Price ($) *</label>
                             <input type="number" step="0.01" class="form-control" name="price" 
                                    value="<?php echo $edit_product ? $edit_product['price'] : ''; ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Original Price ($)</label>
+                            <input type="number" step="0.01" class="form-control" name="original_price" 
+                                   value="<?php echo $edit_product ? ($edit_product['original_price'] ?? $edit_product['price']) : ''; ?>" 
+                                   placeholder="Leave empty to use base price">
+                            <small style="color: #6b7280;">The original price before discount (for display purposes)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Current/Sale Price ($)</label>
+                            <input type="number" step="0.01" class="form-control" name="current_price" 
+                                   value="<?php echo $edit_product ? ($edit_product['current_price'] ?? $edit_product['price']) : ''; ?>" 
+                                   placeholder="Leave empty to use base price">
+                            <small style="color: #6b7280;">The price customers will pay (if different from base price)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Discount Percentage (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" name="discount_percentage" 
+                                   value="<?php echo $edit_product ? ($edit_product['discount_percentage'] ?? 0) : 0; ?>">
+                            <small style="color: #6b7280;">Enter discount percentage (e.g., 20 for 20% off)</small>
                         </div>
 
                         <div class="form-group">

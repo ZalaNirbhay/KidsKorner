@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once('database/db_connection.php');
 
 // Get filter parameters
@@ -139,6 +141,16 @@ ob_start();
         color: #ffffff;
     }
 
+    .product-action-btn.wishlisted {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .product-action-btn.wishlisted:hover {
+        background: #fecaca;
+        color: #dc2626;
+    }
+
     .product-info {
         padding: 1.5rem;
     }
@@ -216,9 +228,17 @@ ob_start();
                                      class="product-image">
                             <?php endif; ?>
                             <?php if (isset($_SESSION['user_id'])): ?>
+                                <?php
+                                // Check if product is in wishlist
+                                $user_id = $_SESSION['user_id'];
+                                $wishlist_check = mysqli_query($con, "SELECT * FROM wishlist WHERE user_id = $user_id AND product_id = " . $product['id']);
+                                $is_wishlisted = mysqli_num_rows($wishlist_check) > 0;
+                                ?>
                                 <div class="product-actions">
-                                    <a href="#" class="product-action-btn" title="Add to Wishlist">
-                                        <i class="ri-heart-line"></i>
+                                    <a href="#" class="product-action-btn add-to-wishlist <?php echo $is_wishlisted ? 'wishlisted' : ''; ?>" 
+                                       data-product-id="<?php echo $product['id']; ?>"
+                                       title="<?php echo $is_wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
+                                        <i class="ri-heart-<?php echo $is_wishlisted ? 'fill' : 'line'; ?>"></i>
                                     </a>
                                     <a href="#" class="product-action-btn add-to-cart" 
                                        data-product-id="<?php echo $product['id']; ?>"
@@ -239,7 +259,23 @@ ob_start();
                             <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
                                 <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
                             </div>
-                            <div class="product-price">$<?php echo number_format($product['price'], 2); ?></div>
+                            <?php
+                            $current_price = $product['current_price'] ?? $product['price'];
+                            $original_price = $product['original_price'] ?? $product['price'];
+                            $discount_percentage = $product['discount_percentage'] ?? 0;
+                            $has_discount = $discount_percentage > 0 && $current_price < $original_price;
+                            ?>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="product-price">$<?php echo number_format($current_price, 2); ?></div>
+                                <?php if ($has_discount): ?>
+                                    <span style="font-size: 0.9rem; color: #9ca3af; text-decoration: line-through;">
+                                        $<?php echo number_format($original_price, 2); ?>
+                                    </span>
+                                    <span style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                                        -<?php echo number_format($discount_percentage, 0); ?>%
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 <?php endwhile; ?>
@@ -255,6 +291,7 @@ ob_start();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add to cart functionality
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     
     addToCartButtons.forEach(button => {
@@ -280,6 +317,45 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error adding product to cart');
+            });
+        });
+    });
+
+    // Add to wishlist functionality
+    const addToWishlistButtons = document.querySelectorAll('.add-to-wishlist');
+    
+    addToWishlistButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            const icon = this.querySelector('i');
+            
+            fetch('add_to_wishlist.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'product_id=' + productId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_wishlisted) {
+                        icon.className = 'ri-heart-fill';
+                        this.classList.add('wishlisted');
+                        this.setAttribute('title', 'Remove from Wishlist');
+                    } else {
+                        icon.className = 'ri-heart-line';
+                        this.classList.remove('wishlisted');
+                        this.setAttribute('title', 'Add to Wishlist');
+                    }
+                } else {
+                    alert(data.message || 'Error updating wishlist');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating wishlist');
             });
         });
     });
