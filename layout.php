@@ -109,7 +109,7 @@ if (isset($con) && $con instanceof mysqli) {
     .header-icons {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
     .header-icon {
@@ -118,6 +118,14 @@ if (isset($con) && $con instanceof mysqli) {
       text-decoration: none;
       position: relative;
       transition: color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .header-icon span {
+      font-size: 0.85rem;
+      font-weight: 600;
     }
 
     .header-icon:hover {
@@ -216,6 +224,10 @@ if (isset($con) && $con instanceof mysqli) {
       </div>
 
       <div class="header-icons">
+        <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin_dashboard.php' : 'admin_login.php'; ?>" class="header-icon" title="<?php echo isset($_SESSION['admin_id']) ? 'Admin Dashboard' : 'Admin Login'; ?>">
+          <i class="ri-shield-user-line"></i>
+          <span style="font-size: 0.85rem;"><?php echo isset($_SESSION['admin_id']) ? 'Admin' : 'Admin Login'; ?></span>
+        </a>
         <a href="cart.php" class="header-icon" title="Shopping Cart">
           <i class="ri-shopping-cart-line"></i>
         </a>

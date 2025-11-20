@@ -146,11 +146,12 @@ if (isset($_POST['place_order'])) {
             kk_ensure_order_tables($con);
             $order_number = kk_generate_order_number();
 
+            $initial_payment_status = $payment_method === 'upi' ? 'paid' : 'pending';
             $order_sql = "
-                INSERT INTO orders
-                (order_number, user_id, full_name, email, phone, address_line1, address_line2, city, state, postal_code, payment_method, upi_reference, subtotal, shipping_amount, total_amount)
-                VALUES
-                ('{$order_number}', {$user_id}, '{$full_name}', '{$email}', '{$phone}', '{$address_line1}', '{$address_line2}', '{$city}', '{$state}', '{$postal_code}', '{$payment_method}', '{$upi_reference}', {$subtotal}, {$shipping}, {$total})
+                INSERT INTO orders 
+                (order_number, user_id, full_name, email, phone, address_line1, address_line2, city, state, postal_code, payment_method, upi_reference, subtotal, shipping_amount, total_amount, status, payment_status)
+                VALUES 
+                ('{$order_number}', {$user_id}, '{$full_name}', '{$email}', '{$phone}', '{$address_line1}', '{$address_line2}', '{$city}', '{$state}', '{$postal_code}', '{$payment_method}', '{$upi_reference}', {$subtotal}, {$shipping}, {$total}, 'pending', '{$initial_payment_status}')
             ";
 
             if (mysqli_query($con, $order_sql)) {
