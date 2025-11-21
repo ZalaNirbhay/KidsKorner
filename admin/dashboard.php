@@ -349,6 +349,13 @@ ob_start();
                         <p>Edit or delete</p>
                     </div>
                 </a>
+                  <a href="orders.php" class="action-card">
+                    <i class="ri-add-circle-line"></i>
+                    <div class="action-card-content">
+                        <h3>Orders</h3>
+                        <p>Manage orders</p>
+                    </div>
+                </a>
             </div>
         </div>
     </div>

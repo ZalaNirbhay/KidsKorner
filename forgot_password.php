@@ -97,28 +97,32 @@ $prefilled_email = $_SESSION['password_reset_email'] ?? '';
 ob_start();
 ?>
 
+
 <style>
     body {
-        background: #7da6a1;
         font-family: 'Poppins', sans-serif;
     }
+
     .reset-wrapper {
-        max-width: 1100px;
+        max-width: 900px; /* smaller card width */
         margin: auto;
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 20px;
     }
+
     .reset-card {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 0.9fr; /* right form slightly narrower */
         width: 100%;
         border-radius: 14px;
         overflow: hidden;
         background: #fffdf9;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
+
     .reset-left {
         background: url("designing_pages_images/baby-image.png") center/cover no-repeat;
         position: relative;
@@ -126,7 +130,7 @@ ob_start();
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 30px;
+        padding: 25px;
     }
     .reset-left::after {
         content: "";
@@ -140,67 +144,86 @@ ob_start();
     .reset-left h1 {
         position: relative;
         color: #fff;
-        font-size: 1.9rem;
+        font-size: 1.8rem;
         font-weight: 700;
         z-index: 1;
     }
+
     .reset-right {
-        padding: 40px;
+        padding: 30px 35px; /* reduced padding */
         background: #fffdf9;
     }
+
     .reset-right h2 {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         font-weight: 700;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         text-align: center;
         color: #222;
     }
+
     .reset-right p {
         text-align: center;
         color: #666;
-        margin-bottom: 25px;
+        margin-bottom: 18px; /* reduced */
     }
+
     .form-control {
         border: 1px solid #ddd;
         border-radius: 10px;
-        padding: 12px 14px;
-        font-size: 0.95rem;
-        margin-bottom: 18px;
+        padding: 10px 12px; /* smaller inputs */
+        font-size: 0.9rem;
+        margin-bottom: 14px; /* reduced space */
         transition: all 0.3s ease;
         width: 100%;
     }
+
     .form-control:focus {
         border-color: #b8735c;
         outline: none;
     }
+
     .btn-kidskorner {
         background: #b8735c;
         color: #fff;
         border: none;
-        padding: 12px;
+        padding: 11px;
         width: 100%;
         border-radius: 10px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
         transition: background 0.3s ease;
+        margin-top: 5px;
     }
+
     .btn-kidskorner:hover {
         background: #9a5b45;
     }
+
     .alert {
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 1rem;
         border-radius: 10px;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
+        margin-bottom: 0.9rem;
+        font-size: 0.85rem;
     }
+
     .alert-success {
         background: #dcfce7;
         color: #15803d;
     }
     .alert-error {
-        background: #fee2e2;
+       background: #fee2e2;
         color: #b91c1c;
     }
+
+    /* Laptop screens (1000px–1300px) */
+    @media (max-width: 1150px) {
+        .reset-card {
+            grid-template-columns: 1fr 1fr;
+            max-width: 820px;
+        }
+    }
+
     @media (max-width: 900px) {
         .reset-card {
             grid-template-columns: 1fr;
@@ -210,6 +233,7 @@ ob_start();
         }
     }
 </style>
+
 
 <div class="reset-wrapper">
     <div class="reset-card">

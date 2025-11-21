@@ -5,7 +5,7 @@ ob_start();
 
 <style>
     body {
-        background: #7da6a1; /* Same as register page */
+        
         font-family: 'Poppins', sans-serif;
     }
 

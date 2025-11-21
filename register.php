@@ -130,7 +130,7 @@ ob_start();
 
 <style>
     body {
-        background: #7da6a1; /* soft muted teal */
+        /* background: #7da6a1; soft muted teal */
         font-family: 'Poppins', sans-serif;
     }
 
