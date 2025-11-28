@@ -32,8 +32,14 @@ function sendEmail($to, $subject, $body, $file = null, $debug = false)
 		);
 
 		// Credentials
-		$mail->Username = 'zalanirbhay21@gmail.com';
-		$mail->Password = 'sfss xztg ulcw zrng'; // App Password
+        $configFile = __DIR__ . '/config/keys.php';
+        if (file_exists($configFile)) {
+            $config = include($configFile);
+            $mail->Username = $config['email']['username'];
+            $mail->Password = $config['email']['password'];
+        } else {
+            throw new Exception("Configuration file not found.");
+        }
 
 		// Sender/recipients
 		$mail->setFrom('zalanirbhay21@gmail.com', 'Kids-Korner');

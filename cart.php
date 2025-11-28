@@ -3,6 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 include_once('database/db_connection.php');
+include_once('helpers/CashfreeHelper.php');
 
 function kk_ensure_order_tables(mysqli $con): void
 {
@@ -132,7 +133,7 @@ if (isset($_POST['place_order'])) {
         $city = mysqli_real_escape_string($con, trim($_POST['city'] ?? ''));
         $state = mysqli_real_escape_string($con, trim($_POST['state'] ?? ''));
         $postal_code = mysqli_real_escape_string($con, trim($_POST['postal_code'] ?? ''));
-        $payment_method = in_array($_POST['payment_method'] ?? '', ['cod', 'upi']) ? $_POST['payment_method'] : '';
+        $payment_method = in_array($_POST['payment_method'] ?? '', ['cod', 'upi', 'cashfree']) ? $_POST['payment_method'] : '';
         $upi_reference = mysqli_real_escape_string($con, trim($_POST['upi_reference'] ?? ''));
         $email = mysqli_real_escape_string($con, $_SESSION['user_email'] ?? ($profile['email'] ?? ''));
 
@@ -176,13 +177,50 @@ if (isset($_POST['place_order'])) {
                 }
 
                 if ($items_saved) {
-                    mysqli_query($con, "DELETE FROM cart WHERE user_id = $user_id");
-                    $cart_items = [];
-                    $subtotal = 0;
-                    $total = $shipping;
-                    $checkout_message = "Order placed successfully! Your order number is {$order_number}.";
-                    $checkout_type = "success";
-                    $recent_order_number = $order_number;
+                    if ($payment_method === 'cashfree') {
+                        // Cashfree Payment Logic
+                        try {
+                            $cfHelper = new CashfreeHelper();
+                            
+                            // Construct return URL dynamically
+                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                            $host = $_SERVER['HTTP_HOST'];
+                            $scriptDir = dirname($_SERVER['PHP_SELF']);
+                            // Ensure scriptDir doesn't end with slash unless it's just /
+                            $scriptDir = rtrim($scriptDir, '/\\');
+                            $returnUrl = "{$protocol}://{$host}{$scriptDir}/payment_callback.php?order_id={$order_number}";
+
+                            $customerDetails = [
+                                'id' => (string)$user_id,
+                                'name' => $full_name,
+                                'email' => $email,
+                                'phone' => $phone
+                            ];
+                            
+                            $paymentData = $cfHelper->createOrder($order_number, $total, $customerDetails, $returnUrl);
+                            $payment_session_id = $paymentData['payment_session_id'] ?? null;
+                            
+                            if ($payment_session_id) {
+                                $checkout_message = "Initiating payment... Please wait.";
+                                $checkout_type = "info";
+                            } else {
+                                $checkout_message = "Payment initiation failed. Please try again.";
+                                $checkout_type = "error";
+                            }
+                        } catch (Exception $e) {
+                             $checkout_message = "Payment error: " . $e->getMessage();
+                             $checkout_type = "error";
+                        }
+                    } else {
+                        // Standard COD/UPI Logic
+                        mysqli_query($con, "DELETE FROM cart WHERE user_id = $user_id");
+                        $cart_items = [];
+                        $subtotal = 0;
+                        $total = $shipping;
+                        $checkout_message = "Order placed successfully! Your order number is {$order_number}.";
+                        $checkout_type = "success";
+                        $recent_order_number = $order_number;
+                    }
                 } else {
                     $checkout_message = "Unable to save order items. Please try again.";
                     $checkout_type = "error";
@@ -631,7 +669,7 @@ ob_start();
                             <div class="checkout-grid">
                                 <div>
                                     <label>Full Name *</label>
-                                    <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($profile['fullname'] ?? ($_SESSION['user_name'] ?? '')); ?>" required>
+                                    <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($_POST['full_name'] ?? ($profile['fullname'] ?? ($_SESSION['user_name'] ?? ''))); ?>" required>
                                 </div>
                                 <div>
                                     <label>Email *</label>
@@ -639,27 +677,27 @@ ob_start();
                                 </div>
                                 <div>
                                     <label>Phone *</label>
-                                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($profile['mobile'] ?? ''); ?>" required>
+                                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($_POST['phone'] ?? ($profile['mobile'] ?? '')); ?>" required>
                                 </div>
                                 <div>
                                     <label>Address Line 1 *</label>
-                                    <input type="text" name="address_line1" class="form-control" value="<?php echo htmlspecialchars($profile['address'] ?? ''); ?>" required>
+                                    <input type="text" name="address_line1" class="form-control" value="<?php echo htmlspecialchars($_POST['address_line1'] ?? ($profile['address'] ?? '')); ?>" required>
                                 </div>
                                 <div>
                                     <label>Address Line 2</label>
-                                    <input type="text" name="address_line2" class="form-control" placeholder="Apartment, suite, etc.">
+                                    <input type="text" name="address_line2" class="form-control" value="<?php echo htmlspecialchars($_POST['address_line2'] ?? ''); ?>" placeholder="Apartment, suite, etc.">
                                 </div>
                                 <div>
                                     <label>City *</label>
-                                    <input type="text" name="city" class="form-control" required>
+                                    <input type="text" name="city" class="form-control" value="<?php echo htmlspecialchars($_POST['city'] ?? ''); ?>" required>
                                 </div>
                                 <div>
                                     <label>State *</label>
-                                    <input type="text" name="state" class="form-control" required>
+                                    <input type="text" name="state" class="form-control" value="<?php echo htmlspecialchars($_POST['state'] ?? ''); ?>" required>
                                 </div>
                                 <div>
                                     <label>Postal Code *</label>
-                                    <input type="text" name="postal_code" class="form-control" required>
+                                    <input type="text" name="postal_code" class="form-control" value="<?php echo htmlspecialchars($_POST['postal_code'] ?? ''); ?>" required>
                                 </div>
                                 <div>
                                     <label>Payment Method *</label>
@@ -669,6 +707,9 @@ ob_start();
                                         </label>
                                         <label class="payment-option">
                                             <input type="radio" name="payment_method" value="upi"> UPI Payment
+                                        </label>
+                                        <label class="payment-option">
+                                            <input type="radio" name="payment_method" value="cashfree"> Online Payment
                                         </label>
                                     </div>
                                 </div>
@@ -727,6 +768,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     toggleUpiField();
 });
+</script>
+
+<!-- Cashfree SDK -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+<script>
+    <?php if (isset($payment_session_id) && $payment_session_id): ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cashfree = Cashfree({
+            mode: "sandbox" // Change to "production" for live
+        });
+        cashfree.checkout({
+            paymentSessionId: "<?php echo $payment_session_id; ?>"
+        });
+    });
+    <?php endif; ?>
 </script>
 
 <?php

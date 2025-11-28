@@ -27,10 +27,10 @@ if (isset($_POST['add_product'])) {
     $image = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image_name = uniqid() . '_' . time() . '_' . $_FILES['image']['name'];
-        $upload_path = "images/products/" . $image_name;
+        $upload_path = "../images/products/" . $image_name;
         
-        if (!is_dir("images/products")) {
-            mkdir("images/products", 0777, true);
+        if (!is_dir("../images/products")) {
+            mkdir("../images/products", 0777, true);
         }
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
@@ -67,10 +67,10 @@ if (isset($_POST['update_product'])) {
     $image_query = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image_name = uniqid() . '_' . time() . '_' . $_FILES['image']['name'];
-        $upload_path = "images/products/" . $image_name;
+        $upload_path = "../images/products/" . $image_name;
         
-        if (!is_dir("images/products")) {
-            mkdir("images/products", 0777, true);
+        if (!is_dir("../images/products")) {
+            mkdir("../images/products", 0777, true);
         }
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
