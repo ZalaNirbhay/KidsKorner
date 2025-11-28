@@ -9,15 +9,29 @@ class CashfreeHelper
 
     public function __construct()
     {
-        $configFile = __DIR__ . '/../config/keys.php';
+        // The keys are located on the Desktop as per user environment
+        $configFile = 'C:/Users/Nirbhay Zala/Desktop/config/keys.php';
+        
         if (file_exists($configFile)) {
             $config = include($configFile);
-            $this->appId = $config['cashfree']['app_id'];
-            $this->secretKey = $config['cashfree']['secret_key'];
-            $this->baseUrl = $config['cashfree']['base_url'];
+            if (isset($config['cashfree'])) {
+                $this->appId = $config['cashfree']['app_id'];
+                $this->secretKey = $config['cashfree']['secret_key'];
+                $this->baseUrl = $config['cashfree']['base_url'];
+            } else {
+                throw new Exception("Cashfree configuration not found in keys.php");
+            }
         } else {
-            // Fallback or error handling if config is missing
-            throw new Exception("Configuration file not found.");
+            // Fallback: try checking if it's in the standard config directory just in case
+            $fallbackConfig = __DIR__ . '/../config/keys.php';
+            if (file_exists($fallbackConfig)) {
+                $config = include($fallbackConfig);
+                $this->appId = $config['cashfree']['app_id'];
+                $this->secretKey = $config['cashfree']['secret_key'];
+                $this->baseUrl = $config['cashfree']['base_url'];
+            } else {
+                throw new Exception("Configuration file not found at: " . $configFile);
+            }
         }
     }
 

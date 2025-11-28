@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 27, 2025 at 04:58 PM
+-- Generation Time: Nov 28, 2025 at 01:06 PM
 -- Server version: 8.0.43
 -- PHP Version: 8.3.16
 
@@ -35,13 +35,6 @@ CREATE TABLE `cart` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `cart`
---
-
-INSERT INTO `cart` (`id`, `user_id`, `product_id`, `quantity`, `created_at`, `updated_at`) VALUES
-(5, 5, 5, 2, '2025-11-22 06:46:38', '2025-11-22 06:46:47');
 
 -- --------------------------------------------------------
 
@@ -88,7 +81,7 @@ CREATE TABLE `orders` (
   `city` varchar(120) NOT NULL,
   `state` varchar(120) NOT NULL,
   `postal_code` varchar(30) NOT NULL,
-  `payment_method` enum('cod','upi') NOT NULL,
+  `payment_method` enum('cod','upi','cashfree') NOT NULL,
   `upi_reference` varchar(120) DEFAULT NULL,
   `subtotal` decimal(10,2) NOT NULL,
   `shipping_amount` decimal(10,2) NOT NULL,
@@ -104,7 +97,8 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`id`, `order_number`, `user_id`, `full_name`, `email`, `phone`, `address_line1`, `address_line2`, `city`, `state`, `postal_code`, `payment_method`, `upi_reference`, `subtotal`, `shipping_amount`, `total_amount`, `status`, `payment_status`, `created_at`) VALUES
 (1, 'KK20251120095822675', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'asd', 'abc', 'abc', '212121', 'cod', '', 5000.00, 10.00, 5010.00, 'delivered', 'paid', '2025-11-20 09:58:22'),
-(2, 'KK20251121065454900', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cod', '', 2500.00, 10.00, 2510.00, 'pending', 'pending', '2025-11-21 06:54:54');
+(2, 'KK20251121065454900', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cod', '', 2500.00, 10.00, 2510.00, 'pending', 'pending', '2025-11-21 06:54:54'),
+(3, 'KK20251128125952811', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cashfree', '', 454.00, 10.00, 464.00, 'processing', 'paid', '2025-11-28 12:59:52');
 
 -- --------------------------------------------------------
 
@@ -128,7 +122,8 @@ CREATE TABLE `order_items` (
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `quantity`, `price`, `created_at`) VALUES
 (1, 1, 6, 'nirbhay', 1, 5000.00, '2025-11-20 09:58:22'),
-(2, 2, 5, 'laptop', 1, 2500.00, '2025-11-21 06:54:54');
+(2, 2, 5, 'laptop', 1, 2500.00, '2025-11-21 06:54:54'),
+(3, 3, 7, 'hg', 1, 454.00, '2025-11-28 12:59:52');
 
 -- --------------------------------------------------------
 
@@ -183,7 +178,8 @@ CREATE TABLE `products` (
 
 INSERT INTO `products` (`id`, `name`, `description`, `price`, `original_price`, `current_price`, `discount_percentage`, `category_id`, `image`, `stock`, `status`, `created_at`, `updated_at`) VALUES
 (5, 'laptop', 'laptop for kids', 2500.00, 2500.00, 2500.00, 0.00, 3, '6910bb6e81852_1762704238_sahej-brar-cMS9DomMJTY-unsplash.jpg', 20, 'active', '2025-11-09 16:03:58', '2025-11-09 17:06:44'),
-(6, 'nirbhay', 'buy or it will sell fast', 5000.00, 6999.00, 4555.00, 10.00, 3, '691ee001ef704_1763631105_login-design.png', 5, 'active', '2025-11-20 09:31:46', '2025-11-20 09:31:46');
+(6, 'nirbhay', 'buy or it will sell fast', 5000.00, 6999.00, 4555.00, 10.00, 3, '691ee001ef704_1763631105_login-design.png', 5, 'active', '2025-11-20 09:31:46', '2025-11-20 09:31:46'),
+(7, 'hg', 'jhhj', 454.00, 4664.00, 66.00, 5.00, 2, '69295f0a0be14_1764318986_login-design.png', 2, 'active', '2025-11-28 08:36:26', '2025-11-28 08:36:26');
 
 -- --------------------------------------------------------
 
@@ -317,7 +313,7 @@ ALTER TABLE `wishlist`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -329,13 +325,13 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `password_reset_codes`
@@ -347,7 +343,7 @@ ALTER TABLE `password_reset_codes`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `registration`

@@ -20,7 +20,7 @@ function kk_ensure_order_tables(mysqli $con): void
             `city` VARCHAR(120) NOT NULL,
             `state` VARCHAR(120) NOT NULL,
             `postal_code` VARCHAR(30) NOT NULL,
-            `payment_method` ENUM('cod','upi') NOT NULL,
+            `payment_method` ENUM('cod','upi','cashfree') NOT NULL,
             `upi_reference` VARCHAR(120) NULL,
             `subtotal` DECIMAL(10,2) NOT NULL,
             `shipping_amount` DECIMAL(10,2) NOT NULL,
