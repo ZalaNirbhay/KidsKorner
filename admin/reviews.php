@@ -8,8 +8,27 @@ if (!isset($_SESSION['admin_id']) || $_SESSION['admin_role'] != 'admin') {
     exit;
 }
 
-// Get all users
-$users = mysqli_query($con, "SELECT * FROM registration WHERE role = 'User' ORDER BY created_at DESC");
+// Handle Delete Review
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    $query = "DELETE FROM reviews WHERE id = $id";
+    
+    if (mysqli_query($con, $query)) {
+        $message = "Review deleted successfully!";
+        $message_type = "success";
+    } else {
+        $message = "Error deleting review: " . mysqli_error($con);
+        $message_type = "error";
+    }
+}
+
+// Get reviews with details
+$query = "SELECT r.*, u.fullname as user_name, p.name as product_name, p.image as product_image 
+          FROM reviews r 
+          JOIN registration u ON r.user_id = u.id 
+          JOIN products p ON r.product_id = p.id 
+          ORDER BY r.created_at DESC";
+$reviews = mysqli_query($con, $query);
 
 ob_start();
 ?>
@@ -133,11 +152,17 @@ ob_start();
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
     .page-title {
         font-size: 1.75rem;
         font-weight: 700;
         color: #1f2937;
-        margin-bottom: 2rem;
     }
 
     .table-container {
@@ -153,6 +178,7 @@ ob_start();
         padding: 1rem;
         text-align: left;
         border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
     }
 
     th {
@@ -161,44 +187,68 @@ ob_start();
         color: #374151;
     }
 
-    .user-image {
-        width: 50px;
-        height: 50px;
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .product-image {
+        width: 40px;
+        height: 40px;
         object-fit: cover;
-        border-radius: 50%;
+        border-radius: 6px;
     }
 
-    .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
+    .rating-stars {
+        color: #fbbf24;
+        font-size: 1rem;
     }
 
-    .badge-active {
+    .review-comment {
+        color: #4b5563;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+        max-width: 400px;
+    }
+
+    .btn-delete {
+        background: #dc2626;
+        color: #ffffff;
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        opacity: 0.9;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-success {
         background: #d1fae5;
         color: #065f46;
+        border-left: 4px solid #10b981;
     }
 
-    .badge-inactive {
+    .alert-error {
         background: #fee2e2;
         color: #991b1b;
-    }
-
-    .badge-verified {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-
-    .badge-unverified {
-        background: #fef3c7;
-        color: #92400e;
+        border-left: 4px solid #dc2626;
     }
 </style>
 
 <div class="admin-header">
     <div class="admin-header-content">
-        <h1><i class="ri-user-line"></i> Manage Users</h1>
+        <h1><i class="ri-star-line"></i> Manage Reviews</h1>
         <div class="admin-header-actions">
             <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
             <a href="dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
@@ -216,63 +266,72 @@ ob_start();
                 <li><a href="dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a></li>
                 <li><a href="categories.php"><i class="ri-folder-line"></i> Categories</a></li>
                 <li><a href="products.php"><i class="ri-shopping-bag-line"></i> Products</a></li>
-                <li><a href="users.php" class="active"><i class="ri-user-line"></i> Users</a></li>
+                <li><a href="users.php"><i class="ri-user-line"></i> Users</a></li>
                 <li><a href="orders.php"><i class="ri-file-list-line"></i> Orders</a></li>
-                <li><a href="reviews.php"><i class="ri-star-line"></i> Reviews</a></li>
+                <li><a href="reviews.php" class="active"><i class="ri-star-line"></i> Reviews</a></li>
             </ul>
         </div>
 
         <div class="admin-main">
-            <h2 class="page-title">All Users</h2>
-            
+            <div class="page-header">
+                <h2 class="page-title">Product Reviews</h2>
+            </div>
+
+            <?php if (isset($message) && $message): ?>
+                <div class="alert alert-<?php echo $message_type; ?>">
+                    <?php echo htmlspecialchars($message); ?>
+                </div>
+            <?php endif; ?>
+
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Mobile</th>
-                            <th>Status</th>
-                            <th>Verified</th>
-                            <th>Joined</th>
+                            <th>Product</th>
+                            <th>User</th>
+                            <th>Rating</th>
+                            <th>Review</th>
+                            <th>Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (mysqli_num_rows($users) > 0): ?>
-                            <?php while ($user = mysqli_fetch_assoc($users)): ?>
+                        <?php if (mysqli_num_rows($reviews) > 0): ?>
+                            <?php while ($review = mysqli_fetch_assoc($reviews)): ?>
                                 <tr>
                                     <td>
-                                        <?php if ($user['profile_picture']): ?>
-                                            <img src="images/profile_pictures/<?php echo htmlspecialchars($user['profile_picture']); ?>" 
-                                                 alt="<?php echo htmlspecialchars($user['fullname']); ?>" 
-                                                 class="user-image">
-                                        <?php else: ?>
-                                            <div style="width: 50px; height: 50px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                                <i class="ri-user-line" style="color: #9ca3af;"></i>
-                                            </div>
-                                        <?php endif; ?>
+                                        <div class="product-info">
+                                            <?php if ($review['product_image']): ?>
+                                                <img src="../images/products/<?php echo htmlspecialchars($review['product_image']); ?>" class="product-image">
+                                            <?php else: ?>
+                                                <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 6px;"></div>
+                                            <?php endif; ?>
+                                            <span><?php echo htmlspecialchars($review['product_name']); ?></span>
+                                        </div>
                                     </td>
-                                    <td><strong><?php echo htmlspecialchars($user['fullname']); ?></strong></td>
-                                    <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                    <td><?php echo $user['mobile'] ? htmlspecialchars($user['mobile']) : 'N/A'; ?></td>
+                                    <td><?php echo htmlspecialchars($review['user_name']); ?></td>
                                     <td>
-                                        <span class="badge badge-<?php echo strtolower($user['status']); ?>">
-                                            <?php echo htmlspecialchars($user['status']); ?>
-                                        </span>
+                                        <div class="rating-stars">
+                                            <?php echo str_repeat('★', $review['rating']) . str_repeat('☆', 5 - $review['rating']); ?>
+                                        </div>
                                     </td>
                                     <td>
-                                        <span class="badge badge-<?php echo $user['is_verified'] == 'active' ? 'verified' : 'unverified'; ?>">
-                                            <?php echo ucfirst($user['is_verified']); ?>
-                                        </span>
+                                        <div class="review-comment">
+                                            <?php echo nl2br(htmlspecialchars($review['comment'])); ?>
+                                        </div>
                                     </td>
-                                    <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($review['created_at'])); ?></td>
+                                    <td>
+                                        <a href="?delete=<?php echo $review['id']; ?>" 
+                                           class="btn-delete" 
+                                           onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem; color: #6b7280;">
-                                    No users found.
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: #6b7280;">
+                                    No reviews found.
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -287,4 +346,3 @@ ob_start();
 $content = ob_get_clean();
 echo $content;
 ?>
-

@@ -11,437 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 include_once('database/db_connection.php');
 
 $user_id = (int) $_SESSION['user_id'];
-$orders = [];
-$orders_table_exists = mysqli_query($con, "SHOW TABLES LIKE 'orders'");
 
-if ($orders_table_exists && mysqli_num_rows($orders_table_exists) > 0) {
-    $orders_query = "SELECT * FROM orders WHERE user_id = $user_id ORDER BY created_at DESC";
-    $orders_result = mysqli_query($con, $orders_query);
-    if ($orders_result) {
-        while ($order = mysqli_fetch_assoc($orders_result)) {
-            $items_query = mysqli_query($con, "SELECT * FROM order_items WHERE order_id = {$order['id']}");
-            $items = [];
-            if ($items_query) {
-                while ($item = mysqli_fetch_assoc($items_query)) {
-                    $items[] = $item;
-                }
-            }
-            $order['items'] = $items;
-            $orders[] = $order;
-        }
-    }
-}
-
-$status_steps = ['pending', 'processing', 'shipped', 'delivered'];
-
-function kk_status_badge($status)
-{
-    $status = strtolower($status);
-    $map = [
-        'pending' => ['Waiting', '#fbbf24', '#92400e'],
-        'processing' => ['Processing', '#bfdbfe', '#1d4ed8'],
-        'shipped' => ['Shipped', '#c7d2fe', '#4338ca'],
-        'delivered' => ['Delivered', '#bbf7d0', '#15803d'],
-        'cancelled' => ['Cancelled', '#fecaca', '#b91c1c'],
-    ];
-
-    if (!isset($map[$status])) {
-        return ['label' => ucfirst($status), 'bg' => '#e5e7eb', 'color' => '#374151'];
-    }
-
-    return ['label' => $map[$status][0], 'bg' => $map[$status][1], 'color' => $map[$status][2]];
-}
-
-ob_start();
-?>
-
-<style>
-    .orders-page {
-        padding: 4rem 0;
-        background: #f9fafb;
-    }
-
-    .orders-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 1.5rem;
-    }
-
-    .orders-header {
-        margin-bottom: 2rem;
-    }
-
-    .orders-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 0.5rem;
-    }
-
-    .orders-subtitle {
-        color: #6b7280;
-    }
-
-    .order-card {
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 1.75rem;
-        margin-bottom: 1.75rem;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-        border: 1px solid #e5e7eb;
-    }
-
-    .order-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-
-    .order-number {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .order-meta {
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
-
-    .status-badges {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-
-    .status-pill {
-        padding: 0.35rem 0.85rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .order-timeline {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .timeline-step {
-        text-align: center;
-        position: relative;
-    }
-
-    .timeline-step::before {
-        content: "";
-        position: absolute;
-        top: 16px;
-        left: 50%;
-        width: 100%;
-        height: 2px;
-        background: #e5e7eb;
-        z-index: 0;
-    }
-
-    .timeline-step:last-child::before {
-        display: none;
-    }
-
-    .timeline-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        margin: 0 auto 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1;
-        position: relative;
-    }
-
-    .timeline-icon.complete {
-        background: #bbf7d0;
-        color: #15803d;
-    }
-
-    .timeline-icon.active {
-        background: #bfdbfe;
-        color: #1d4ed8;
-    }
-
-    .timeline-icon.pending {
-        background: #e5e7eb;
-        color: #6b7280;
-    }
-
-    .timeline-label {
-        font-size: 0.85rem;
-        color: #374151;
-        font-weight: 600;
-    }
-
-    .order-body {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
-
-    .items-card,
-    .details-card {
-        background: #f9fafb;
-        border-radius: 14px;
-        padding: 1.25rem;
-        border: 1px solid #e5e7eb;
-    }
-
-    .items-card h4,
-    .details-card h4 {
-        margin-bottom: 1rem;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .item-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.85rem;
-        padding-bottom: 0.85rem;
-        border-bottom: 1px dashed #e5e7eb;
-    }
-
-    .item-name {
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .item-meta {
-        color: #6b7280;
-        font-size: 0.85rem;
-    }
-
-    .total-row {
-        display: flex;
-        justify-content: space-between;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-top: 1rem;
-    }
-
-    .details-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .details-list li {
-        margin-bottom: 0.85rem;
-        color: #374151;
-        font-size: 0.95rem;
-    }
-
-    .details-list span {
-        display: block;
-        color: #6b7280;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.15rem;
-    }
-
-    .empty-state {
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 3rem 2rem;
-        text-align: center;
-        border: 1px dashed #d1d5db;
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        color: #d1d5db;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state h3 {
-        margin-bottom: 0.5rem;
-        color: #111827;
-    }
-
-    .empty-state p {
-        color: #6b7280;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn-primary {
-        background: #b8735c;
-        color: #ffffff;
-        padding: 0.85rem 1.5rem;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary:hover {
-        background: #9a5b45;
-    }
-
-    @media (max-width: 768px) {
-        .order-body {
-            grid-template-columns: 1fr;
-        }
-
-        .order-timeline {
-            grid-template-columns: repeat(2, 1fr);
-            row-gap: 1.25rem;
-        }
-    }
-</style>
-
-<section class="orders-page">
-    <div class="orders-container">
-        <div class="orders-header">
-            <h1 class="orders-title">My Orders</h1>
-            <p class="orders-subtitle">Track every purchase and delivery update in one place.</p>
-        </div>
-
-        <?php if (empty($orders)): ?>
-            <div class="empty-state">
-                <i class="ri-shopping-bag-3-line"></i>
-                <h3>No orders yet</h3>
-                <p>Your future purchases will appear here. Start exploring our collections!</p>
-                <a href="index.php" class="btn-primary"><i class="ri-store-2-line"></i> Continue Shopping</a>
-            </div>
-        <?php else: ?>
-            <?php foreach ($orders as $order): ?>
-                <?php $badge = kk_status_badge($order['status']); ?>
-                <div class="order-card">
-                    <div class="order-card-header">
-                        <div>
-                            <div class="order-number">Order #<?php echo htmlspecialchars($order['order_number']); ?></div>
-                            <div class="order-meta">Placed on <?php echo date('M d, Y h:i A', strtotime($order['created_at'])); ?></div>
-                        </div>
-                        <div class="status-badges">
-                            <span class="status-pill" style="background: <?php echo $badge['bg']; ?>; color: <?php echo $badge['color']; ?>;">
-                                <i class="ri-checkbox-circle-line"></i> <?php echo $badge['label']; ?>
-                            </span>
-                            <span class="status-pill" style="background: #e0e7ff; color: #4338ca;">
-                                Payment: <?php echo ucfirst($order['payment_status'] ?: 'pending'); ?>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="order-timeline">
-                        <?php foreach ($status_steps as $index => $step): ?>
-                            <?php
-                                $stepState = 'pending';
-                                $current_index = array_search(strtolower($order['status']), $status_steps);
-                                if ($current_index === false) {
-                                    $current_index = 0;
-                                }
-                                if ($index < $current_index) {
-                                    $stepState = 'complete';
-                                } elseif ($index == $current_index) {
-                                    $stepState = 'active';
-                                }
-                            ?>
-                            <div class="timeline-step">
-                                <div class="timeline-icon <?php echo $stepState; ?>">
-                                    <i class="ri-check-line"></i>
-                                </div>
-                                <div class="timeline-label"><?php echo ucfirst($step); ?></div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <div class="order-body">
-                        <div class="items-card">
-                            <h4>Items</h4>
-                            <?php foreach ($order['items'] as $item): ?>
-                                <div class="item-row">
-                                    <div>
-                                        <div class="item-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
-                                        <div class="item-meta">Qty: <?php echo $item['quantity']; ?> • $<?php echo number_format($item['price'], 2); ?></div>
-                                    </div>
-                                    <div class="item-price">
-                                        $<?php echo number_format($item['price'] * $item['quantity'], 2); ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                            <div class="total-row">
-                                <span>Total</span>
-                                <span>$<?php echo number_format($order['total_amount'], 2); ?></span>
-                            </div>
-                        </div>
-
-                        <div class="details-card">
-                            <h4>Delivery & Payment</h4>
-                            <ul class="details-list">
-                                <li>
-                                    <span>Payment Method</span>
-                                    <?php echo strtoupper($order['payment_method']); ?>
-                                    <?php if ($order['payment_method'] === 'upi' && !empty($order['upi_reference'])): ?>
-                                        <br><small style="color:#6b7280;">UPI Ref: <?php echo htmlspecialchars($order['upi_reference']); ?></small>
-                                    <?php endif; ?>
-                                </li>
-                                <li>
-                                    <span>Ship To</span>
-                                    <?php echo htmlspecialchars($order['full_name']); ?><br>
-                                    <?php echo htmlspecialchars($order['address_line1']); ?>
-                                    <?php if (!empty($order['address_line2'])): ?>
-                                        , <?php echo htmlspecialchars($order['address_line2']); ?>
-                                    <?php endif; ?>
-                                    <br>
-                                    <?php echo htmlspecialchars($order['city']); ?>, <?php echo htmlspecialchars($order['state']); ?> <?php echo htmlspecialchars($order['postal_code']); ?>
-                                    <br>
-                                    Phone: <?php echo htmlspecialchars($order['phone']); ?>
-                                </li>
-                                <li>
-                                    <span>Subtotal</span>
-                                    $<?php echo number_format($order['subtotal'], 2); ?>
-                                </li>
-                                <li>
-                                    <span>Shipping</span>
-                                    $<?php echo number_format($order['shipping_amount'], 2); ?>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-</section>
-
-<?php
-$content = ob_get_clean();
-include_once('layout.php');
-?>
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
-
-include_once('database/db_connection.php');
-
-$user_id = (int) $_SESSION['user_id'];
-
+// Fetch orders
 $orders_query = mysqli_query($con, "SELECT * FROM orders WHERE user_id = {$user_id} ORDER BY created_at DESC");
 $orders = [];
 $order_ids = [];
@@ -453,6 +24,7 @@ if ($orders_query) {
     }
 }
 
+// Fetch order items
 $items_by_order = [];
 if (!empty($order_ids)) {
     $ids = implode(',', array_map('intval', $order_ids));
@@ -461,6 +33,15 @@ if (!empty($order_ids)) {
         while ($item = mysqli_fetch_assoc($items_result)) {
             $items_by_order[$item['order_id']][] = $item;
         }
+    }
+}
+
+// Fetch existing reviews by this user
+$reviews_query = mysqli_query($con, "SELECT product_id, order_id FROM reviews WHERE user_id = {$user_id}");
+$user_reviews = [];
+if ($reviews_query) {
+    while ($review = mysqli_fetch_assoc($reviews_query)) {
+        $user_reviews[$review['order_id']][$review['product_id']] = true;
     }
 }
 
@@ -611,6 +192,7 @@ ob_start();
     .order-item {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         gap: 1rem;
         font-size: 0.95rem;
         color: #374151;
@@ -667,6 +249,109 @@ ob_start();
         font-weight: 600;
     }
 
+    .btn-review {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-review:hover {
+        background: #2563eb;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6b7280;
+    }
+
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        font-size: 2rem;
+        color: #d1d5db;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #fbbf24;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+    }
+
+    .btn-submit-review {
+        width: 100%;
+        background: #b8735c;
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
     @media (max-width: 640px) {
         .order-header {
             flex-direction: column;
@@ -685,6 +370,16 @@ ob_start();
             <h1>Order History</h1>
             <p>Track the progress of your recent purchases.</p>
         </div>
+
+        <?php if (isset($_SESSION['message'])): ?>
+            <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; background: <?php echo $_SESSION['message_type'] == 'success' ? '#dcfce7' : '#fee2e2'; ?>; color: <?php echo $_SESSION['message_type'] == 'success' ? '#15803d' : '#b91c1c'; ?>;">
+                <?php 
+                echo $_SESSION['message']; 
+                unset($_SESSION['message']);
+                unset($_SESSION['message_type']);
+                ?>
+            </div>
+        <?php endif; ?>
 
         <?php if (empty($orders)): ?>
             <div class="empty-state">
@@ -740,7 +435,23 @@ ob_start();
                             <ul>
                                 <?php foreach ($items as $item): ?>
                                     <li class="order-item">
-                                        <span><?php echo htmlspecialchars($item['product_name']); ?> × <?php echo $item['quantity']; ?></span>
+                                        <div>
+                                            <span><?php echo htmlspecialchars($item['product_name']); ?> × <?php echo $item['quantity']; ?></span>
+                                            <?php 
+                                            $is_delivered = ($status === 'delivered');
+                                            $has_reviewed = isset($user_reviews[$order['id']][$item['product_id']]);
+                                            
+                                            if ($is_delivered && !$has_reviewed): 
+                                            ?>
+                                                <button class="btn-review" onclick="openReviewModal(<?php echo $order['id']; ?>, <?php echo $item['product_id']; ?>, '<?php echo addslashes($item['product_name']); ?>')">
+                                                    Write Review
+                                                </button>
+                                            <?php elseif ($has_reviewed): ?>
+                                                <span style="font-size: 0.8rem; color: #10b981; margin-left: 0.5rem;">
+                                                    <i class="ri-check-line"></i> Reviewed
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                         <strong>$<?php echo number_format($item['price'] * $item['quantity'], 2); ?></strong>
                                     </li>
                                 <?php endforeach; ?>
@@ -786,8 +497,63 @@ ob_start();
     </div>
 </section>
 
+<!-- Review Modal -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeReviewModal()">&times;</span>
+        <h2 style="margin-bottom: 1rem; color: #1f2937;">Write a Review</h2>
+        <p id="modalProductName" style="color: #6b7280; margin-bottom: 1.5rem;"></p>
+        
+        <form action="submit_review.php" method="POST">
+            <input type="hidden" name="order_id" id="modalOrderId">
+            <input type="hidden" name="product_id" id="modalProductId">
+            
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 stars">&#9733;</label>
+                    <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars">&#9733;</label>
+                    <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars">&#9733;</label>
+                    <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars">&#9733;</label>
+                    <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star">&#9733;</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="comment">Your Review</label>
+                <textarea name="comment" id="comment" rows="4" class="form-control" placeholder="Share your experience with this product..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit-review">Submit Review</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('reviewModal');
+    const modalProductName = document.getElementById('modalProductName');
+    const modalOrderId = document.getElementById('modalOrderId');
+    const modalProductId = document.getElementById('modalProductId');
+
+    function openReviewModal(orderId, productId, productName) {
+        modal.style.display = 'flex';
+        modalProductName.textContent = productName;
+        modalOrderId.value = orderId;
+        modalProductId.value = productId;
+    }
+
+    function closeReviewModal() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeReviewModal();
+        }
+    }
+</script>
+
 <?php
 $content = ob_get_clean();
 include_once('layout.php');
 ?>
-

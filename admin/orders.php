@@ -370,6 +370,7 @@ ob_start();
             <li><a href="products.php"><i class="ri-shopping-bag-line"></i> Products</a></li>
             <li><a href="users.php"><i class="ri-user-line"></i> Users</a></li>
             <li><a href="orders.php" class="active"><i class="ri-file-list-line"></i> Orders</a></li>
+            <li><a href="reviews.php"><i class="ri-star-line"></i> Reviews</a></li>
         </ul>
     </div>
 

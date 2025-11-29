@@ -32,13 +32,28 @@ function sendEmail($to, $subject, $body, $file = null, $debug = false)
 		);
 
 		// Credentials
-        $configFile = __DIR__ . '/config/keys.php';
+		// Credentials
+        // The keys are located on the Desktop as per user environment
+        $configFile = 'C:/Users/Nirbhay Zala/Desktop/config/keys.php';
+        
         if (file_exists($configFile)) {
             $config = include($configFile);
-            $mail->Username = $config['email']['username'];
-            $mail->Password = $config['email']['password'];
+            if (isset($config['email'])) {
+                $mail->Username = $config['email']['username'];
+                $mail->Password = $config['email']['password'];
+            } else {
+                throw new Exception("Email configuration not found in keys.php");
+            }
         } else {
-            throw new Exception("Configuration file not found.");
+             // Fallback: try checking if it's in the standard config directory just in case
+            $fallbackConfig = __DIR__ . '/config/keys.php';
+            if (file_exists($fallbackConfig)) {
+                $config = include($fallbackConfig);
+                $mail->Username = $config['email']['username'];
+                $mail->Password = $config['email']['password'];
+            } else {
+                throw new Exception("Configuration file not found at: " . $configFile);
+            }
         }
 
 		// Sender/recipients
