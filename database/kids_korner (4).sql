@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 28, 2025 at 01:06 PM
+-- Generation Time: Dec 01, 2025 at 04:40 PM
 -- Server version: 8.0.43
 -- PHP Version: 8.3.16
 
@@ -58,10 +58,9 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`, `image`, `icon`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Newborns', 'Products for newborns (0-3 months)', NULL, 'ri-gift-line', 'active', '2025-11-09 15:59:59', '2025-11-09 15:59:59'),
-(2, 'Toddlers', 'Products for toddlers (1-3 years)', NULL, 'ri-stack-line', 'active', '2025-11-09 15:59:59', '2025-11-09 15:59:59'),
-(3, 'Gear & Nursery', 'Nursery essentials and gear', NULL, 'ri-map-pin-line', 'active', '2025-11-09 15:59:59', '2025-11-09 15:59:59'),
-(4, 'preschool', 'buy essentials for kids going to pre schools', '6910c4180ad17_1762706456_baby-2.png', 'ri-gift-line', 'active', '2025-11-09 16:40:56', '2025-11-09 16:40:56');
+(5, 'Toys', 'Toys For Your Childrens', '692dbba35563f_1764604835_car2.png', 'ri-gift-line', 'active', '2025-12-01 15:30:56', '2025-12-01 16:00:35'),
+(6, 'Baby Care', 'Baby Care Productes For Your New Born Baby', '692dbb82d357a_1764604802_categories-img.jpeg', 'ri-gift-line', 'active', '2025-12-01 16:00:02', '2025-12-01 16:00:02'),
+(7, 'Clothes', 'Clothes For Your New Born Babys', '692dbc6840413_1764605032_IMG_0197.jpg', 'ri-gift-line', 'active', '2025-12-01 16:03:24', '2025-12-01 16:03:52');
 
 -- --------------------------------------------------------
 
@@ -98,7 +97,11 @@ CREATE TABLE `orders` (
 INSERT INTO `orders` (`id`, `order_number`, `user_id`, `full_name`, `email`, `phone`, `address_line1`, `address_line2`, `city`, `state`, `postal_code`, `payment_method`, `upi_reference`, `subtotal`, `shipping_amount`, `total_amount`, `status`, `payment_status`, `created_at`) VALUES
 (1, 'KK20251120095822675', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'asd', 'abc', 'abc', '212121', 'cod', '', 5000.00, 10.00, 5010.00, 'delivered', 'paid', '2025-11-20 09:58:22'),
 (2, 'KK20251121065454900', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cod', '', 2500.00, 10.00, 2510.00, 'pending', 'pending', '2025-11-21 06:54:54'),
-(3, 'KK20251128125952811', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cashfree', '', 454.00, 10.00, 464.00, 'processing', 'paid', '2025-11-28 12:59:52');
+(3, 'KK20251128125952811', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'KhandheriKhandheri', 'Khandheri', 'Khandheri', 'Gujarat', '362150', 'cashfree', '', 454.00, 10.00, 464.00, 'processing', 'paid', '2025-11-28 12:59:52'),
+(4, 'KK20251201162910699', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'Rajkot', 'samras boys hostel rajkot', 'rajkot', 'Gujarat', '360005', 'cashfree', '', 549.00, 10.00, 559.00, 'pending', 'pending', '2025-12-01 16:29:10'),
+(5, 'KK20251201163100317', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'Rajkot', 'samras boys hostel rajkot', 'rajkot', 'Gujarat', '360005', 'cashfree', '', 549.00, 10.00, 559.00, 'pending', 'pending', '2025-12-01 16:31:00'),
+(6, 'KK20251201163850621', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'Rajkot', 'samras boys hostel rajkot', 'rajkot', 'Gujarat', '360005', 'cashfree', '', 549.00, 10.00, 559.00, 'pending', 'pending', '2025-12-01 16:38:50'),
+(7, 'KK20251201163859431', 5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '1234567890', 'Rajkot', 'samras boys hostel rajkot', 'rajkot', 'Gujarat', '360005', 'cashfree', '', 549.00, 10.00, 559.00, 'processing', 'paid', '2025-12-01 16:38:59');
 
 -- --------------------------------------------------------
 
@@ -121,9 +124,10 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `quantity`, `price`, `created_at`) VALUES
-(1, 1, 6, 'nirbhay', 1, 5000.00, '2025-11-20 09:58:22'),
-(2, 2, 5, 'laptop', 1, 2500.00, '2025-11-21 06:54:54'),
-(3, 3, 7, 'hg', 1, 454.00, '2025-11-28 12:59:52');
+(4, 4, 10, 'Jungle animal 12 piss mix cractor set multicolour toys Rattle', 1, 549.00, '2025-12-01 16:29:10'),
+(5, 5, 10, 'Jungle animal 12 piss mix cractor set multicolour toys Rattle', 1, 549.00, '2025-12-01 16:31:00'),
+(6, 6, 10, 'Jungle animal 12 piss mix cractor set multicolour toys Rattle', 1, 549.00, '2025-12-01 16:38:50'),
+(7, 7, 10, 'Jungle animal 12 piss mix cractor set multicolour toys Rattle', 1, 549.00, '2025-12-01 16:38:59');
 
 -- --------------------------------------------------------
 
@@ -148,7 +152,9 @@ CREATE TABLE `password_reset_codes` (
 --
 
 INSERT INTO `password_reset_codes` (`id`, `user_id`, `email`, `otp_hash`, `purpose`, `expires_at`, `is_used`, `used_at`, `created_at`) VALUES
-(1, 5, 'zalanirbhay21@gmail.com', '$2y$10$On7R7Qa3/P3BeAfaAZ5SoukMqYPnyLCKm6DNiiU2i3geP1j41ydeS', 'password_change', '2025-11-20 10:06:56', 1, '2025-11-20 15:27:34', '2025-11-20 09:56:56');
+(1, 5, 'zalanirbhay21@gmail.com', '$2y$10$On7R7Qa3/P3BeAfaAZ5SoukMqYPnyLCKm6DNiiU2i3geP1j41ydeS', 'password_change', '2025-11-20 10:06:56', 1, '2025-11-20 15:27:34', '2025-11-20 09:56:56'),
+(3, 5, 'zalanirbhay21@gmail.com', '$2y$10$xoZSzWiGqe1GC/ariKsd4.ByimKqAl8mLvWfr0OZunbYCO.J8N8ci', 'forgot_password', '2025-11-28 13:42:11', 0, NULL, '2025-11-28 13:32:11'),
+(5, 9, 'bca2022nirbhay1746@tnraocollege.org', '$2y$10$X7kI3z3Gczf3N4alHE4mbeOefqvygKSFv/568pIB36xo7jdjWEtFW', 'password_change', '2025-11-28 13:54:37', 1, '2025-11-28 19:15:05', '2025-11-28 13:44:37');
 
 -- --------------------------------------------------------
 
@@ -177,9 +183,12 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `price`, `original_price`, `current_price`, `discount_percentage`, `category_id`, `image`, `stock`, `status`, `created_at`, `updated_at`) VALUES
-(5, 'laptop', 'laptop for kids', 2500.00, 2500.00, 2500.00, 0.00, 3, '6910bb6e81852_1762704238_sahej-brar-cMS9DomMJTY-unsplash.jpg', 20, 'active', '2025-11-09 16:03:58', '2025-11-09 17:06:44'),
-(6, 'nirbhay', 'buy or it will sell fast', 5000.00, 6999.00, 4555.00, 10.00, 3, '691ee001ef704_1763631105_login-design.png', 5, 'active', '2025-11-20 09:31:46', '2025-11-20 09:31:46'),
-(7, 'hg', 'jhhj', 454.00, 4664.00, 66.00, 5.00, 2, '69295f0a0be14_1764318986_login-design.png', 2, 'active', '2025-11-28 08:36:26', '2025-11-28 08:36:26');
+(8, 'AEXONIZ TOYS 85+ Piece ', 'oy Building Block is perfect for developing fine motor skills, hand- eye coordination and social skills.Toy building block is made of environmentally friendly abs plastic with smooth edge, harmless to your kids', 499.00, 899.00, 349.00, 0.00, 5, '692db67de5198_1764603517_toy3.png', 15, 'active', '2025-12-01 15:37:40', '2025-12-01 15:53:15'),
+(9, 'Pipe Puzzle Shape Building Block Game for Kids  (Multicolor)', 'Raptor Ride on the jeep, with a remote is a safe, easy-to-operate, ride-on toy that can be used on any hard surface and lets your kid build a happy memory. This car is made from the most durable material allowing for an always smooth and enjoyable ride. With life-like features, ease of use, and durable body construction, they provide miles of enjoyment for children', 9999.00, 12999.00, 9999.00, 0.00, 5, '692db7f91f7a7_1764603897_car2.png', 28, 'active', '2025-12-01 15:44:57', '2025-12-01 15:44:57'),
+(10, 'Jungle animal 12 piss mix cractor set multicolour toys Rattle', 'Back Features & details [ SET OF 12 ANIMALS ] : With Saleon wildlife animal toy set, your child will have a diverse collection of 12 animals, including lion, tiger, elephant, hippopotamus, rhinosorous, deer, panda and more', 549.00, 649.00, 549.00, 0.00, 5, '692db94b18276_1764604235_image.png', 14, 'active', '2025-12-01 15:50:35', '2025-12-01 15:50:35'),
+(11, 'BRANDONN Fleece Baby Bed Sized Bedding Set ', 'Baby Bedding For New Borns', 249.00, 399.00, 249.00, 0.00, 6, '692dbc1566b78_1764604949_image.png', 5, 'active', '2025-12-01 16:02:29', '2025-12-01 16:02:29'),
+(12, 'Dinosaur Casual Shirt Pyjama', 'Baby Boys & Baby Girls Dinosaur Casual Shirt Pyjama  (Gold)', 219.00, 299.00, 219.00, 0.00, 7, '692dbd87ece3a_1764605319_image.png', 43, 'active', '2025-12-01 16:08:39', '2025-12-01 16:08:39'),
+(13, 'Casual Dress Pyjama, Bootie, Bib, Cap', 'Baby Boys & Baby Girls Casual Dress Pyjama, Bootie, Bib, Cap  (Multicolor)\r\n', 429.00, 539.00, 429.00, 0.00, 7, '692dbe77897a9_1764605559_image copy.png', 29, 'active', '2025-12-01 16:12:39', '2025-12-01 16:12:39');
 
 -- --------------------------------------------------------
 
@@ -212,8 +221,24 @@ CREATE TABLE `registration` (
 
 INSERT INTO `registration` (`id`, `fullname`, `email`, `password`, `gender`, `mobile`, `profile_picture`, `address`, `status`, `role`, `token`, `is_verified`, `verification_token`, `verification_expires`, `created_at`, `updated_at`) VALUES
 (5, 'Zala Nirbhay', 'zalanirbhay21@gmail.com', '@NNn12345', 'Male', 1234567890, '68e6a4c1df7b7profile1.jpg', 'Khandheri\r\nKhandheri', 'Active', 'User', 'c4d698a71cbde51cc24e978e3bb94d69', 'active', NULL, NULL, '2025-10-08 17:52:01', '2025-11-20 09:57:34'),
-(6, 'Zala Nirbhay', 'bca2022nirbhay1746@tnraocollege.org', '@Nn12345', 'Male', 1234567890, '68e6a952dc0d5_1759947090.jpg', 'Khandheri\r\nKhandheri', 'Active', 'User', '95353a1aa2753243e6cd53d6ed95a3e2', 'active', NULL, NULL, '2025-10-08 18:11:30', '2025-10-08 18:11:45'),
-(7, 'Admin User', 'admin@kidskorner.com', '@Nn12345', NULL, NULL, NULL, NULL, 'Active', 'admin', 'admin-token-123', 'active', NULL, NULL, '2025-11-09 16:00:46', '2025-11-09 16:01:32');
+(7, 'Admin User', 'admin@kidskorner.com', '@Nn12345', NULL, NULL, NULL, NULL, 'Active', 'admin', 'admin-token-123', 'active', NULL, NULL, '2025-11-09 16:00:46', '2025-11-09 16:01:32'),
+(9, 'rajesh', 'bca2022nirbhay1746@tnraocollege.org', '@NNn12345', 'Male', 1234567890, '6929a4e2dd3e4_1764336866.jpg', 'Khandheri\r\nKhandheri', 'Active', 'User', 'a31805066a86bfa101da03535a7cf8e1', 'active', NULL, NULL, '2025-11-28 13:34:26', '2025-11-28 13:45:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `order_id` int NOT NULL,
+  `rating` int NOT NULL,
+  `comment` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ;
 
 -- --------------------------------------------------------
 
@@ -227,14 +252,6 @@ CREATE TABLE `wishlist` (
   `product_id` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `wishlist`
---
-
-INSERT INTO `wishlist` (`id`, `user_id`, `product_id`, `created_at`) VALUES
-(2, 5, 6, '2025-11-20 09:32:37'),
-(3, 5, 5, '2025-11-22 06:46:36');
 
 --
 -- Indexes for dumped tables
@@ -297,6 +314,15 @@ ALTER TABLE `registration`
   ADD KEY `idx_email_verification` (`email`,`is_verified`);
 
 --
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `product_id` (`product_id`),
+  ADD KEY `order_id` (`order_id`);
+
+--
 -- Indexes for table `wishlist`
 --
 ALTER TABLE `wishlist`
@@ -313,43 +339,49 @@ ALTER TABLE `wishlist`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `password_reset_codes`
 --
 ALTER TABLE `password_reset_codes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `registration`
 --
 ALTER TABLE `registration`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wishlist`
@@ -392,6 +424,14 @@ ALTER TABLE `password_reset_codes`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `registration` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `wishlist`

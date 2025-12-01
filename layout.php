@@ -257,6 +257,8 @@ if (isset($con) && $con instanceof mysqli) {
         <?php else: ?>
           <li style="color: #9ca3af;">No categories available</li>
         <?php endif; ?>
+        <li><a href="about-us.php">About Us</a></li>
+        <li><a href="contact-us.php">Contact Us</a></li>
         <?php if (!isset($_SESSION['user_email'])): ?>
           <li class="nav-login-link">
             <a href="login.php">Login</a>
@@ -285,7 +287,8 @@ if (isset($con) && $con instanceof mysqli) {
       <div class="footer-column">
         <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">About Us</h3>
         <ul style="list-style: none;">
-          <li><a href="#" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Shipping & Returns</a></li>
+          <li><a href="about-us.php" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Our Story</a></li>
+          <li><a href="contact-us.php" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">Contact Us</a></li>
         </ul>
       </div>
       <div class="footer-column">

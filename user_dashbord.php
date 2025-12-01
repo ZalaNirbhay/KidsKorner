@@ -5,12 +5,8 @@ include 'database/db_connection.php';
 
 // Security check: Redirect if not logged in
 if (!isset($_SESSION['user_email'])) {
-    setcookie('error', 'Please login to access your dashboard', time() + 5);
-?>
-    <script>
-        window.location.href = "login.php";
-    </script>
-<?php
+    $_SESSION['error_message'] = "Please log in to access your dashboard.";
+    header("Location: login.php");
     exit;
 }
 ob_start();

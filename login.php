@@ -149,6 +149,15 @@ ob_start();
             <h2>Login to KidsKorner</h2>
             <p>Welcome back! Please enter your details to continue.</p>
 
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-danger" style="background-color: #fef2f2; color: #991b1b; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #fecaca;">
+                    <?php 
+                    echo htmlspecialchars($_SESSION['error_message']); 
+                    unset($_SESSION['error_message']);
+                    ?>
+                </div>
+            <?php endif; ?>
+
             <form id="loginForm" method="post" action="check_login.php">
                 <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>

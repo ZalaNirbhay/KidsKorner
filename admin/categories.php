@@ -22,10 +22,10 @@ if (isset($_POST['add_category'])) {
     $image = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image_name = uniqid() . '_' . time() . '_' . $_FILES['image']['name'];
-        $upload_path = "images/categories/" . $image_name;
+        $upload_path = "../images/categories/" . $image_name;
         
-        if (!is_dir("images/categories")) {
-            mkdir("images/categories", 0777, true);
+        if (!is_dir("../images/categories")) {
+            mkdir("../images/categories", 0777, true);
         }
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
@@ -57,10 +57,10 @@ if (isset($_POST['update_category'])) {
     $image_query = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image_name = uniqid() . '_' . time() . '_' . $_FILES['image']['name'];
-        $upload_path = "images/categories/" . $image_name;
+        $upload_path = "../images/categories/" . $image_name;
         
-        if (!is_dir("images/categories")) {
-            mkdir("images/categories", 0777, true);
+        if (!is_dir("../images/categories")) {
+            mkdir("../images/categories", 0777, true);
         }
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
@@ -407,7 +407,7 @@ ob_start();
     <div class="admin-header-content">
         <h1><i class="ri-folder-line"></i> Manage Categories</h1>
         <div class="admin-header-actions">
-            <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
+            <span>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'Admin'); ?></span>
             <a href="dashboard.php"><i class="ri-dashboard-line"></i> Dashboard</a>
             <a href="../index.php" target="_blank"><i class="ri-external-link-line"></i> View Website</a>
             <a href="../logout.php"><i class="ri-logout-box-line"></i> Logout</a>
@@ -513,7 +513,7 @@ ob_start();
                                     <tr>
                                         <td>
                                             <?php if ($category['image']): ?>
-                                                <img src="images/categories/<?php echo htmlspecialchars($category['image']); ?>" 
+                                                <img src="../images/categories/<?php echo htmlspecialchars($category['image']); ?>" 
                                                      alt="<?php echo htmlspecialchars($category['name']); ?>" 
                                                      class="category-image">
                                             <?php else: ?>
